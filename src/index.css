@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* ─── Base ───────────────────────────────────────────── */
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-200 antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────── */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(120%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* ─── Skeleton Shimmer ───────────────────────────────── */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(30 41 59 / 0.8); /* slate-800/80 */
+}
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(51 65 85 / 0.6) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ─── Light Mode Overrides ───────────────────────────── */
+html.light-mode {
+  color-scheme: light;
+}
+
+html.light-mode body {
+  background-color: #f1f5f9; /* slate-100 */
+  color: #1e293b; /* slate-800 */
+}
+
+/* Backgrounds */
+html.light-mode .bg-slate-950 { background-color: #f1f5f9 !important; }
+html.light-mode .bg-slate-900 { background-color: #ffffff !important; }
+html.light-mode .bg-slate-800\/50, html.light-mode .bg-slate-800\/40, html.light-mode .bg-slate-800\/60 {
+  background-color: rgba(226, 232, 240, 0.6) !important;
+}
+html.light-mode .bg-slate-800 { background-color: #e2e8f0 !important; }
+html.light-mode .bg-slate-700 { background-color: #cbd5e1 !important; }
+
+/* Borders */
+html.light-mode .border-slate-800 { border-color: #e2e8f0 !important; }
+html.light-mode .border-slate-800\/50 { border-color: rgba(226,232,240,0.7) !important; }
+html.light-mode .border-slate-700 { border-color: #cbd5e1 !important; }
+html.light-mode .border-slate-700\/50 { border-color: rgba(203,213,225,0.7) !important; }
+html.light-mode .border-slate-700\/60 { border-color: rgba(203,213,225,0.8) !important; }
+
+/* Text */
+html.light-mode .text-white { color: #0f172a !important; }
+html.light-mode .text-slate-200 { color: #334155 !important; }
+html.light-mode .text-slate-300 { color: #475569 !important; }
+html.light-mode .text-slate-400 { color: #64748b !important; }
+html.light-mode .text-slate-500 { color: #94a3b8 !important; }
+html.light-mode .text-slate-600 { color: #94a3b8 !important; }
+html.light-mode .text-slate-950 { color: #f8fafc !important; }
+
+/* Hover & dividers */
+html.light-mode .hover\:bg-slate-800\/40:hover { background-color: rgba(226,232,240,0.5) !important; }
+html.light-mode .divide-slate-800 > * + * { border-color: #e2e8f0 !important; }
+
+/* Inputs */
+html.light-mode input[type="text"],
+html.light-mode input[type="password"],
+html.light-mode input[type="number"],
+html.light-mode input[type="date"],
+html.light-mode input[type="email"],
+html.light-mode input[type="tel"],
+html.light-mode select,
+html.light-mode textarea {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+html.light-mode input::placeholder,
+html.light-mode textarea::placeholder { color: #94a3b8 !important; }
+
+/* Skeleton light mode */
+html.light-mode .skeleton-shimmer {
+  background-color: rgb(226 232 240 / 0.8);
+}
+html.light-mode .skeleton-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(203 213 225 / 0.8) 50%,
+    transparent 100%
+  );
+}
+
+/* Backdrop blur cards in light mode */
+html.light-mode .backdrop-blur-xl { backdrop-filter: blur(16px); }
+html.light-mode .bg-slate-900\/80 { background-color: rgba(255,255,255,0.9) !important; }
+
+/* Shadow adjustments for light mode */
+html.light-mode .shadow-xl { box-shadow: 0 8px 32px -4px rgba(0,0,0,0.08), 0 2px 8px -2px rgba(0,0,0,0.04); }
+html.light-mode .shadow-2xl { box-shadow: 0 16px 48px -8px rgba(0,0,0,0.12), 0 4px 16px -4px rgba(0,0,0,0.06); }
+
+/* ─── Mobile Responsive Helpers ─────────────────────── */
+@media (max-width: 640px) {
+  .mobile-hide-label span.label-text {
+    display: none;
+  }
+  .table-mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}
