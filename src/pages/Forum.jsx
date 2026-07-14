@@ -30,19 +30,22 @@ export default function Forum() {
     }
   }, []);
 
-  // 2. Ambil daftar semua touring untuk Sidebar kiri
+  // 2. Ambil daftar touring yang diikuti untuk Sidebar kiri
   useEffect(() => {
-    const fetchAllTourings = async () => {
+    const fetchMyTourings = async () => {
       try {
-        // Ambil banyak sekaligus agar semua grup muncul di sidebar
-        const res = await API.get('/api/touring', { params: { limit: 100 } });
-        const data = res.data?.data || [];
-        setTourings(data);
+        // Hanya ambil grup yang sudah diikuti user
+        const res = await API.get('/api/my-touring');
+        const data = Array.isArray(res.data) ? res.data : [];
+        
+        // Map dari model Registration -> Touring
+        const joinedTourings = data.map(reg => reg.touring).filter(Boolean);
+        setTourings(joinedTourings);
         
         // Cek URL params jika ada ?id=xxx
         const urlId = searchParams.get('id');
         if (urlId) {
-          const selected = data.find(t => t.id.toString() === urlId);
+          const selected = joinedTourings.find(t => t.id.toString() === urlId);
           if (selected) {
             setActiveTouring(selected);
           }
@@ -51,7 +54,7 @@ export default function Forum() {
         console.error("Gagal memuat daftar touring", err);
       }
     };
-    fetchAllTourings();
+    fetchMyTourings();
   }, [searchParams]);
 
   // 3. Auto-scroll ke bawah saat ada pesan baru

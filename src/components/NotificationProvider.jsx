@@ -3,6 +3,7 @@ import API from '../api/axios';
 
 export default function NotificationProvider({ children }) {
   const lastMsgIdRef = useRef(0);
+  const myTouringIdsRef = useRef(new Set());
   const username = localStorage.getItem('username') || 'User';
   const token = localStorage.getItem('token');
   const [swRegistration, setSwRegistration] = useState(null);
@@ -28,6 +29,12 @@ export default function NotificationProvider({ children }) {
         // Ambil semua grup yang kita ikuti, cari ID terbesar dari diskusinya
         const res = await API.get('/api/my-touring');
         const myRegs = Array.isArray(res.data) ? res.data : [];
+        
+        // Simpan ID touring yang kita ikuti
+        const idSet = new Set();
+        myRegs.forEach(reg => idSet.add(reg.touring_id));
+        myTouringIdsRef.current = idSet;
+
         let maxId = 0;
         
         // Kita cukup set ID yang sangat besar atau ambil pesan terbaru secara manual
@@ -62,7 +69,9 @@ export default function NotificationProvider({ children }) {
             if (msg.user?.username !== username) {
               
               // Filter: pastikan grup ini adalah grup yang kita ikuti?
-              // (Di skenario ini, anggap semua diskusi adalah publik atau backend sudah filter)
+              if (!myTouringIdsRef.current.has(msg.touring_id)) {
+                return; // Lewati notifikasi jika kita tidak ikut grup ini
+              }
 
               // Cek apakah user sedang membuka chat ini di layar (aktif)
               const url = new URL(window.location.href);
