@@ -74,8 +74,8 @@ function Dashboard() {
   const [stats, setStats] = useState({ total_users: 0, total_tourings: 0, total_registrations: 0 });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortField, setSortField] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortField, setSortField] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
   const [expandedRow, setExpandedRow] = useState(null);
 
   // Modal: Gabung Touring
