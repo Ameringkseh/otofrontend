@@ -364,7 +364,7 @@ function Dashboard() {
           <BarChart2 className="w-6 h-6 text-emerald-400" /> Grafik Peserta per Agenda
         </h2>
         <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <BarChart data={tourings.map(t => ({ uniqueName: `${t.id}-${t.nama_touring || t.title}`, rawName: (t.nama_touring || t.title), peserta: t.peserta_count || 0 }))}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
               <XAxis dataKey="uniqueName" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => getShortName(val.substring(val.indexOf('-') + 1))} />
