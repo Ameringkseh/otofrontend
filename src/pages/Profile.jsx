@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
-import { ShieldCheck, User, Contact, Save, Lock, Eye, EyeOff, Wrench, X, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, User, Contact, Save, Lock, Eye, EyeOff, Wrench, X, AlertTriangle, Camera, Trash2 } from 'lucide-react';
 
 function Profile() {
   const toast = useToast();
@@ -9,8 +9,10 @@ function Profile() {
   const role = localStorage.getItem('role') || 'user';
 
   // --- States ---
-  const [profileForm, setProfileForm] = useState({ full_name: '', email: '', phone_number: '' });
+  const [profileForm, setProfileForm] = useState({ full_name: '', email: '', phone_number: '', profile_photo: '' });
   const [profileLoading, setProfileLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [pwdForm, setPwdForm] = useState({ old_password: '', new_password: '', confirm_password: '' });
   const [showOld, setShowOld] = useState(false);
@@ -34,7 +36,8 @@ function Profile() {
       setProfileForm({
         full_name: data.full_name || '',
         email: data.email || '',
-        phone_number: data.phone_number || ''
+        phone_number: data.phone_number || '',
+        profile_photo: data.profile_photo || ''
       });
       setVehicles(data.vehicles || []);
     } catch (err) {
@@ -44,6 +47,54 @@ function Profile() {
   };
 
   // --- Handlers ---
+  const handleUploadPhoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran file maksimal 5MB');
+      e.target.value = '';
+      return;
+    }
+    
+    if (!file.type.match('image.*')) {
+      toast.error('Hanya file gambar (JPG, PNG, GIF) yang diizinkan');
+      e.target.value = '';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setUploadLoading(true);
+    try {
+      const res = await API.post('/api/upload-profile-photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setProfileForm({ ...profileForm, profile_photo: res.data.data.profile_photo });
+      toast.success('Foto profil berhasil diperbarui! 🎉');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal mengupload foto');
+    } finally {
+      setUploadLoading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!profileForm.profile_photo) return;
+    setUploadLoading(true);
+    try {
+      await API.delete('/api/delete-profile-photo');
+      setProfileForm({ ...profileForm, profile_photo: '' });
+      toast.success('Foto profil berhasil dihapus!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal menghapus foto');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setProfileLoading(true);
@@ -139,18 +190,63 @@ function Profile() {
       
       {/* Header Profil */}
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-6">
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 flex-shrink-0 text-slate-900">
-          {role === 'admin' ? <ShieldCheck className="w-12 h-12" /> : <User className="w-12 h-12" />}
+        
+        {/* FOTO PROFIL SECTION */}
+        <div className="relative group">
+          <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 flex-shrink-0 text-slate-900 border-2 border-transparent group-hover:border-emerald-400 transition-all duration-300">
+            {uploadLoading ? (
+               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+            ) : profileForm.profile_photo ? (
+               <img src={profileForm.profile_photo} alt="Profil" className="w-full h-full object-cover" />
+            ) : (
+               role === 'admin' ? <ShieldCheck className="w-12 h-12" /> : <User className="w-12 h-12" />
+            )}
+          </div>
+          
+          {/* Overlay Edit (Visible on Hover) */}
+          <div className="absolute inset-0 bg-slate-950/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadLoading}
+              className="text-white hover:text-emerald-400 transition"
+              title="Ganti Foto (Maks 5MB)"
+            >
+              <Camera className="w-6 h-6" />
+            </button>
+            {profileForm.profile_photo && (
+              <button 
+                onClick={handleDeletePhoto}
+                disabled={uploadLoading}
+                className="text-white hover:text-red-400 transition"
+                title="Hapus Foto"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleUploadPhoto} 
+            accept="image/jpeg, image/png, image/gif" 
+            className="hidden" 
+          />
         </div>
+
         <div className="flex-1 text-center sm:text-left">
           <h2 className="text-2xl font-bold text-white mb-2">{username}</h2>
-          <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase px-3 py-1.5 rounded-full ${
-            role === 'admin'
-              ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-              : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-          }`}>
-            {role === 'admin' ? <ShieldCheck className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />} {role === 'admin' ? 'Administrator' : 'Member'}
-          </span>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 justify-center sm:justify-start">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase px-3 py-1.5 rounded-full ${
+              role === 'admin'
+                ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+            }`}>
+              {role === 'admin' ? <ShieldCheck className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />} {role === 'admin' ? 'Administrator' : 'Member'}
+            </span>
+            <span className="text-[11px] font-semibold text-slate-400 flex items-center bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
+              Maks 5MB (JPG, PNG)
+            </span>
+          </div>
         </div>
       </div>
 
