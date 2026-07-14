@@ -77,14 +77,7 @@ function Dashboard() {
   const [gabungMsg, setGabungMsg] = useState({ text: '', isError: false });
   const [gabungLoading, setGabungLoading] = useState(false);
 
-  // Modal: Diskusi
-  const [diskusiModal, setDiskusiModal] = useState(null);
-  const [diskusiList, setDiskusiList] = useState([]);
-  const [diskusiLoading, setDiskusiLoading] = useState(false);
-  const [diskusiInput, setDiskusiInput] = useState('');
-  const [diskusiSending, setDiskusiSending] = useState(false);
-  const chatBottomRef = useRef(null);
-  const lastMsgIdRef = useRef(0);
+  // State diskusi telah dipindahkan ke halaman Forum khusus
 
   // Modal: Edit Agenda (Admin)
   const [editModal, setEditModal] = useState(null);
@@ -160,68 +153,7 @@ function Dashboard() {
     return () => clearTimeout(delayDebounce);
   }, [page, searchTerm, sortField, sortOrder]);
 
-  // ─── Diskusi ─────────────────────────────────────────────
-  const fetchDiskusi = async (id, silent = false, touringName = 'Diskusi') => {
-    if (!silent) setDiskusiLoading(true);
-    try {
-      const res = await API.get(`/api/touring/${id}/diskusi`);
-      const data = Array.isArray(res.data) ? res.data : [];
-      setDiskusiList(data);
-      
-      if (data.length > 0) {
-        const latestMsg = data[data.length - 1];
-        if (silent && lastMsgIdRef.current !== 0 && latestMsg.id > lastMsgIdRef.current && latestMsg.user?.username !== username) {
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(`Pesan baru di ${touringName}`, {
-              body: `${latestMsg.user?.username}: ${latestMsg.message}`
-            });
-          }
-        }
-        lastMsgIdRef.current = latestMsg.id;
-      }
-    } catch { 
-      if (!silent) setDiskusiList([]); 
-    }
-    finally { 
-      if (!silent) setDiskusiLoading(false); 
-    }
-  };
-
-  useEffect(() => {
-    if (chatBottomRef.current) chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-  }, [diskusiList]);
-
-  // Polling untuk Live Chat saat modal diskusi terbuka
-  useEffect(() => {
-    let interval;
-    if (diskusiModal) {
-      interval = setInterval(() => {
-        fetchDiskusi(diskusiModal.id, true, diskusiModal.nama);
-      }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [diskusiModal]);
-
-  const openDiskusi = (item) => { 
-    lastMsgIdRef.current = 0;
-    setDiskusiModal({ id: item.id, nama: item.nama_touring || item.title }); 
-    fetchDiskusi(item.id); 
-  };
-  const closeDiskusi = () => { 
-    setDiskusiModal(null); 
-    setDiskusiList([]); 
-    setDiskusiInput(''); 
-    lastMsgIdRef.current = 0;
-  };
-
-  const handleSendDiskusi = async (e) => {
-    e.preventDefault();
-    if (!diskusiInput.trim()) return;
-    setDiskusiSending(true);
-    try { await API.post(`/api/touring/${diskusiModal.id}/diskusi`, { message: diskusiInput }); setDiskusiInput(''); fetchDiskusi(diskusiModal.id, true, diskusiModal.nama); }
-    catch (err) { console.error(err); }
-    finally { setDiskusiSending(false); }
-  };
+  // Logika chat dan diskusi kini ada di halaman Forum khusus
 
   // ─── Gabung Touring ──────────────────────────────────────
   const openGabung = (item) => { setGabungModal({ id: item.id, nama: item.nama_touring || item.title }); setGabungForm({ bike_model: '', license_plate: '' }); setGabungMsg({ text: '', isError: false }); };
@@ -501,8 +433,8 @@ function Dashboard() {
                             className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
                             <UserPlus className="w-3.5 h-3.5" /> Gabung
                           </button>
-                          {/* Diskusi - semua */}
-                          <button onClick={() => openDiskusi(item)}
+                          {/* Diskusi - redirect ke halaman forum */}
+                          <button onClick={() => navigate(`/dashboard/forum?id=${item.id}`)}
                             className="inline-flex items-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/25 text-indigo-400 border border-indigo-500/30 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
                             <MessageSquare className="w-3.5 h-3.5" /> Forum
                           </button>
@@ -725,63 +657,6 @@ function Dashboard() {
         </Modal>
       )}
 
-      {/* ═══ MODAL: DISKUSI ═══ */}
-      {diskusiModal && (
-        <Modal onClose={closeDiskusi} maxWidth="max-w-lg">
-          <ModalHeader title={<span className="flex items-center gap-2"><MessageSquare className="w-5 h-5 text-indigo-400" /> Forum Diskusi</span>} subtitle={diskusiModal.nama} subtitleColor="text-indigo-400" onClose={closeDiskusi} />
-          <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ minHeight: '280px' }}>
-            {diskusiLoading ? (
-              <div className="text-center py-8 text-slate-500 text-sm animate-pulse">Memuat diskusi...</div>
-            ) : diskusiList.length === 0 ? (
-              <div className="text-center py-10 flex flex-col items-center gap-2">
-                <MessageSquare className="w-12 h-12 text-slate-600 mb-2" />
-                <p className="text-slate-500 text-sm">Belum ada diskusi. Jadilah yang pertama!</p>
-              </div>
-            ) : diskusiList.map((msg, index) => {
-              const isSelf = msg.user?.username === username;
-              const prevMsg = diskusiList[index - 1];
-              const nextMsg = diskusiList[index + 1];
-              const isSameUserAsPrev = prevMsg && prevMsg.user?.username === msg.user?.username;
-              const isSameUserAsNext = nextMsg && nextMsg.user?.username === msg.user?.username;
-              
-              let bubbleClass = isSelf 
-                ? 'bg-emerald-500 text-slate-950 font-medium' 
-                : 'bg-slate-800 text-slate-200 border border-slate-700/50 shadow-sm';
-
-              // Rounded corners for consecutive messages
-              if (isSelf) {
-                bubbleClass += ` rounded-2xl ${isSameUserAsPrev ? 'rounded-tr-sm' : ''} ${isSameUserAsNext ? 'rounded-br-sm' : 'rounded-br-none'}`;
-              } else {
-                bubbleClass += ` rounded-2xl ${isSameUserAsPrev ? 'rounded-tl-sm' : ''} ${isSameUserAsNext ? 'rounded-bl-sm' : 'rounded-bl-none'}`;
-              }
-
-              return (
-                <div key={msg.id} className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} ${isSameUserAsNext ? 'mb-1' : 'mb-4'}`}>
-                  {!isSameUserAsPrev && (
-                    <span className="text-xs text-slate-400 mb-1 px-1 font-semibold">{isSelf ? 'Anda' : (msg.user?.username || 'User')}</span>
-                  )}
-                  <div className={`max-w-[85%] md:max-w-[75%] px-4 py-2.5 text-sm leading-relaxed ${bubbleClass}`}>
-                    {msg.message}
-                    <span className={`block text-[10px] mt-1 opacity-70 text-right font-medium tracking-wide ${isSelf ? 'text-emerald-950' : 'text-slate-400'}`}>
-                      {new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-            <div ref={chatBottomRef} />
-          </div>
-          <form onSubmit={handleSendDiskusi} className="p-4 border-t border-slate-800 flex gap-2 flex-shrink-0">
-            <input type="text" value={diskusiInput} onChange={(e) => setDiskusiInput(e.target.value)}
-              placeholder="Tulis pesan diskusi..."
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 placeholder-slate-500 transition" />
-            <button type="submit" disabled={diskusiSending || !diskusiInput.trim()}
-              className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold px-4 py-2.5 rounded-xl transition text-sm">
-              {diskusiSending ? '...' : '➤'}
-            </button>
-          </form>
-        </Modal>
-      )}
     </>
   );
 }

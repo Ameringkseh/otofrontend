@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
 import { useTheme } from './ThemeContext';
 import { useToast } from './Toast';
 import Logo from './Logo';
-import { Home, PlusCircle, ClipboardList, User, ShieldCheck, Settings, Key, Sun, Moon, Copy, X, Menu, LogOut, ChevronUp, ChevronDown } from 'lucide-react';
+import { Home, PlusCircle, ClipboardList, User, ShieldCheck, Settings, Key, Sun, Moon, Copy, X, Menu, LogOut, ChevronUp, ChevronDown, MessageSquare } from 'lucide-react';
 
 function DashboardLayout() {
   const { isDark, toggle: toggleTheme } = useTheme();
@@ -76,6 +76,13 @@ function DashboardLayout() {
             className={({ isActive }) => `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 font-medium'}`}>
             <ClipboardList className="w-5 h-5" />
             <span>Touring Saya</span>
+          </NavLink>
+
+          {/* Forum / Chat */}
+          <NavLink to="/dashboard/forum"
+            className={({ isActive }) => `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 font-medium'}`}>
+            <MessageSquare className="w-5 h-5" />
+            <span>Forum Diskusi</span>
           </NavLink>
         </nav>
 

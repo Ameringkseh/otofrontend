@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import DashboardLayout from './components/DashboardLayout';
 import TambahAgenda from './pages/TambahAgenda';
 import TouringSaya from './pages/TouringSaya';
+import Forum from './pages/Forum';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastProvider } from './components/Toast';
@@ -26,6 +27,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="tambah-agenda" element={<TambahAgenda />} />
             <Route path="touring-saya" element={<TouringSaya />} />
+            <Route path="forum" element={<Forum />} />
             <Route path="profil" element={<Profile />} />
           </Route>
           
