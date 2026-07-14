@@ -84,6 +84,7 @@ function Dashboard() {
   const [diskusiInput, setDiskusiInput] = useState('');
   const [diskusiSending, setDiskusiSending] = useState(false);
   const chatBottomRef = useRef(null);
+  const lastMsgIdRef = useRef(0);
 
   // Modal: Edit Agenda (Admin)
   const [editModal, setEditModal] = useState(null);
@@ -145,7 +146,12 @@ function Dashboard() {
     }
   };
 
-  useEffect(() => { fetchStats(); }, []);
+  useEffect(() => { 
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    fetchStats(); 
+  }, []);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -155,27 +161,64 @@ function Dashboard() {
   }, [page, searchTerm, sortField, sortOrder]);
 
   // ─── Diskusi ─────────────────────────────────────────────
-  const fetchDiskusi = async (id) => {
-    setDiskusiLoading(true);
+  const fetchDiskusi = async (id, silent = false, touringName = 'Diskusi') => {
+    if (!silent) setDiskusiLoading(true);
     try {
       const res = await API.get(`/api/touring/${id}/diskusi`);
-      setDiskusiList(Array.isArray(res.data) ? res.data : []);
-    } catch { setDiskusiList([]); }
-    finally { setDiskusiLoading(false); }
+      const data = Array.isArray(res.data) ? res.data : [];
+      setDiskusiList(data);
+      
+      if (data.length > 0) {
+        const latestMsg = data[data.length - 1];
+        if (silent && lastMsgIdRef.current !== 0 && latestMsg.id > lastMsgIdRef.current && latestMsg.user?.username !== username) {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(`Pesan baru di ${touringName}`, {
+              body: `${latestMsg.user?.username}: ${latestMsg.message}`
+            });
+          }
+        }
+        lastMsgIdRef.current = latestMsg.id;
+      }
+    } catch { 
+      if (!silent) setDiskusiList([]); 
+    }
+    finally { 
+      if (!silent) setDiskusiLoading(false); 
+    }
   };
 
   useEffect(() => {
     if (chatBottomRef.current) chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [diskusiList]);
 
-  const openDiskusi = (item) => { setDiskusiModal({ id: item.id, nama: item.nama_touring || item.title }); fetchDiskusi(item.id); };
-  const closeDiskusi = () => { setDiskusiModal(null); setDiskusiList([]); setDiskusiInput(''); };
+  // Polling untuk Live Chat saat modal diskusi terbuka
+  useEffect(() => {
+    let interval;
+    if (diskusiModal) {
+      interval = setInterval(() => {
+        fetchDiskusi(diskusiModal.id, true, diskusiModal.nama);
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [diskusiModal]);
+
+  const openDiskusi = (item) => { 
+    lastMsgIdRef.current = 0;
+    setDiskusiModal({ id: item.id, nama: item.nama_touring || item.title }); 
+    fetchDiskusi(item.id); 
+  };
+  const closeDiskusi = () => { 
+    setDiskusiModal(null); 
+    setDiskusiList([]); 
+    setDiskusiInput(''); 
+    lastMsgIdRef.current = 0;
+  };
 
   const handleSendDiskusi = async (e) => {
     e.preventDefault();
     if (!diskusiInput.trim()) return;
     setDiskusiSending(true);
-    try { await API.post(`/api/touring/${diskusiModal.id}/diskusi`, { message: diskusiInput }); setDiskusiInput(''); fetchDiskusi(diskusiModal.id); }
+    try { await API.post(`/api/touring/${diskusiModal.id}/diskusi`, { message: diskusiInput }); setDiskusiInput(''); fetchDiskusi(diskusiModal.id, true, diskusiModal.nama); }
     catch (err) { console.error(err); }
     finally { setDiskusiSending(false); }
   };
