@@ -13,8 +13,20 @@ function Profile() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
+  const photoMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (photoMenuRef.current && !photoMenuRef.current.contains(event.target)) {
+        setShowPhotoMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [photoMenuRef]);
 
   const [pwdForm, setPwdForm] = useState({ old_password: '', new_password: '', confirm_password: '' });
   const [showOld, setShowOld] = useState(false);
@@ -91,6 +103,7 @@ function Profile() {
 
   const handleDeletePhoto = async () => {
     if (!profileForm.profile_photo) return;
+    if (!window.confirm("Apakah Anda yakin ingin menghapus foto profil ini?")) return;
     setUploadLoading(true);
     try {
       await API.delete('/api/delete-profile-photo');
@@ -202,8 +215,8 @@ function Profile() {
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-6">
         
         {/* FOTO PROFIL SECTION */}
-        <div className="relative group">
-          <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 flex-shrink-0 text-slate-900 border-2 border-transparent group-hover:border-emerald-400 transition-all duration-300">
+        <div className="relative" ref={photoMenuRef}>
+          <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 flex-shrink-0 text-slate-900 border-2 border-transparent transition-all duration-300">
             {uploadLoading ? (
                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
             ) : profileForm.profile_photo ? (
@@ -213,26 +226,35 @@ function Profile() {
             )}
           </div>
           
-          {/* Overlay Edit (Visible on Hover) */}
-          <div className="absolute inset-0 bg-slate-950/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm cursor-pointer" onClick={() => setShowUploadModal(true)}>
-            <button 
-              disabled={uploadLoading}
-              className="text-white hover:text-emerald-400 transition"
-              title="Ganti Foto (Maks 5MB)"
-            >
-              <Camera className="w-6 h-6" />
-            </button>
-            {profileForm.profile_photo && (
+          {/* Tombol Pemanggil Menu */}
+          <button 
+            onClick={() => setShowPhotoMenu(!showPhotoMenu)}
+            disabled={uploadLoading}
+            className="absolute -bottom-2 -right-2 w-8 h-8 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-white hover:bg-slate-700 hover:text-emerald-400 transition shadow-lg z-10"
+          >
+            <Camera className="w-4 h-4" />
+          </button>
+
+          {/* Menu Dropdown (Pop-up) */}
+          {showPhotoMenu && (
+            <div className="absolute top-24 left-0 mt-2 w-40 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-1 z-30 text-slate-200">
               <button 
-                onClick={(e) => { e.stopPropagation(); handleDeletePhoto(); }}
-                disabled={uploadLoading}
-                className="text-white hover:text-red-400 transition"
-                title="Hapus Foto"
+                onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click(); }}
+                className="w-full text-left px-4 py-2 hover:bg-slate-700 flex items-center gap-2 text-sm"
               >
-                <Trash2 className="w-5 h-5" />
+                <Camera className="w-4 h-4" /> Ganti Foto
               </button>
-            )}
-          </div>
+              {profileForm.profile_photo && (
+                <button 
+                  onClick={() => { setShowPhotoMenu(false); handleDeletePhoto(); }}
+                  className="w-full text-left px-4 py-2 hover:bg-red-500/10 hover:text-red-400 flex items-center gap-2 text-sm text-red-400"
+                >
+                  <Trash2 className="w-4 h-4" /> Hapus Foto
+                </button>
+              )}
+            </div>
+          )}
+
           <input 
             type="file" 
             ref={fileInputRef} 

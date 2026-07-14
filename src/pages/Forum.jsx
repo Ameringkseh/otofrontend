@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import API from '../api/axios';
-import { MessageSquare, Send, Users, Calendar, ArrowLeft, User } from 'lucide-react';
+import { MessageSquare, Send, Users, Calendar, ArrowLeft, User, ChevronDown, Edit2, Trash2, X, Check } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 export default function Forum() {
@@ -20,8 +20,25 @@ export default function Forum() {
   const chatBottomRef = useRef(null);
   const lastMsgIdRef = useRef(0);
   const renderedLastMsgIdRef = useRef(0);
+  const menuRef = useRef(null);
   
   const username = localStorage.getItem('username') || 'User';
+
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const [editingMsgId, setEditingMsgId] = useState(null);
+  const [editInputVal, setEditInputVal] = useState('');
+  const [isProcessingMsg, setIsProcessingMsg] = useState(false);
+
+  // Close context menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setActiveMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuRef]);
 
   // 1. Minta Izin Notifikasi saat komponen pertama kali dimuat
   useEffect(() => {
@@ -131,6 +148,39 @@ export default function Forum() {
       toast.error('Gagal mengirim pesan');
     } finally {
       setSendingMsg(false);
+    }
+  };
+
+  const submitEditMessage = async (id) => {
+    if (!editInputVal.trim()) return;
+    setIsProcessingMsg(true);
+    try {
+      await API.put(`/api/diskusi/${id}`, { message: editInputVal });
+      toast.success('Pesan diperbarui');
+      setEditingMsgId(null);
+      // Refresh messages
+      const res = await API.get(`/api/touring/${activeTouring.id}/diskusi`);
+      setMessages(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      toast.error('Gagal mengedit pesan');
+    } finally {
+      setIsProcessingMsg(false);
+    }
+  };
+
+  const deleteMessage = async (id) => {
+    if (!window.confirm("Hapus pesan ini?")) return;
+    setIsProcessingMsg(true);
+    try {
+      await API.delete(`/api/diskusi/${id}`);
+      setActiveMenuId(null);
+      // Refresh messages
+      const res = await API.get(`/api/touring/${activeTouring.id}/diskusi`);
+      setMessages(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      toast.error('Gagal menghapus pesan');
+    } finally {
+      setIsProcessingMsg(false);
     }
   };
 
@@ -267,11 +317,63 @@ export default function Forum() {
                             {isSelf ? 'Anda' : (msg.user?.username || 'User')}
                           </span>
                         )}
-                        <div className={`px-4 py-2.5 text-sm leading-relaxed w-full ${bubbleClass}`}>
-                          {msg.message}
-                          <span className={`block text-[9px] mt-1.5 text-right font-bold uppercase tracking-wider ${isSelf ? 'text-sky-950/70' : 'text-slate-500'}`}>
-                            {new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
-                          </span>
+                        <div className={`px-4 py-2.5 text-sm leading-relaxed w-full relative group ${bubbleClass}`}>
+                          
+                          {/* TOMBOL MUNCUL MENU (Chevron) - KHUSUS MILIK SENDIRI */}
+                          {isSelf && editingMsgId !== msg.id && (
+                             <button 
+                               onClick={() => setActiveMenuId(activeMenuId === msg.id ? null : msg.id)}
+                               className="absolute top-1 right-2 w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 text-sky-950 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                             >
+                               <ChevronDown className="w-4 h-4" />
+                             </button>
+                          )}
+                          
+                          {/* CONTEXT MENU (Dropdown WA-style) */}
+                          {isSelf && activeMenuId === msg.id && (
+                            <div ref={menuRef} className="absolute top-8 right-2 w-32 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-1 z-20 text-slate-200">
+                              <button 
+                                onClick={() => { setEditingMsgId(msg.id); setEditInputVal(msg.message); setActiveMenuId(null); }}
+                                className="w-full text-left px-4 py-2 hover:bg-slate-700 flex items-center gap-2 text-sm"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" /> Edit
+                              </button>
+                              <button 
+                                onClick={() => deleteMessage(msg.id)}
+                                className="w-full text-left px-4 py-2 hover:bg-red-500/10 hover:text-red-400 flex items-center gap-2 text-sm text-red-400"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Hapus
+                              </button>
+                            </div>
+                          )}
+
+                          {editingMsgId === msg.id ? (
+                            <div className="flex flex-col gap-2 mt-1">
+                              <input 
+                                type="text"
+                                autoFocus
+                                value={editInputVal}
+                                onChange={(e) => setEditInputVal(e.target.value)}
+                                className="bg-sky-100 text-slate-900 border border-sky-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-sky-500 w-full"
+                              />
+                              <div className="flex justify-end gap-2">
+                                <button onClick={() => setEditingMsgId(null)} className="text-slate-600 hover:text-slate-900 flex items-center gap-1 text-xs font-bold">
+                                  <X className="w-3 h-3" /> Batal
+                                </button>
+                                <button onClick={() => submitEditMessage(msg.id)} disabled={isProcessingMsg} className="bg-sky-600 text-white rounded px-2 py-1 flex items-center gap-1 text-xs font-bold hover:bg-sky-700 shadow-sm">
+                                  <Check className="w-3 h-3" /> Simpan
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {msg.message}
+                              <span className={`block text-[9px] mt-1.5 text-right font-bold uppercase tracking-wider ${isSelf ? 'text-sky-950/70' : 'text-slate-500'}`}>
+                                {new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
+                                {msg.is_edited && ' (diedit)'}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
