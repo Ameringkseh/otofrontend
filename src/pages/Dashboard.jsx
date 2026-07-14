@@ -343,11 +343,12 @@ function Dashboard() {
         </h2>
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={tourings.map(t => ({ name: (t.nama_touring || t.title), peserta: t.peserta_count || 0 }))}>
+            <BarChart data={tourings.map(t => ({ uniqueName: `${t.id}-${t.nama_touring || t.title}`, rawName: (t.nama_touring || t.title), peserta: t.peserta_count || 0 }))}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-              <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={getShortName} />
+              <XAxis dataKey="uniqueName" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => getShortName(val.substring(val.indexOf('-') + 1))} />
               <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip 
+                labelFormatter={(label) => (label && typeof label === 'string' && label.includes('-')) ? label.substring(label.indexOf('-') + 1) : label}
                 contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }}
                 itemStyle={{ color: '#10b981' }}
               />
