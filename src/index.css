@@ -110,11 +110,20 @@ html.light-mode .to-sky-400 { --tw-gradient-to: #0ea5e9 !important; }
 html.light-mode .hover\:bg-sky-500:hover, html.light-mode .hover\:bg-sky-400:hover { background-color: #0369a1 !important; }
 
 /* Hover & dividers */
-html.light-mode .hover\:bg-slate-800\/40:hover { background-color: rgba(209, 234, 223, 0.7) !important; }
+html.light-mode .hover\:bg-slate-800\/40:hover, html.light-mode .hover\:bg-slate-800\/50:hover { background-color: rgba(209, 234, 223, 0.7) !important; }
 html.light-mode .hover\:bg-slate-800:hover { background-color: #d1eadf !important; }
 html.light-mode .hover\:bg-slate-700:hover { background-color: #bce0d1 !important; }
 html.light-mode .hover\:text-white:hover { color: #047857 !important; }
 html.light-mode .divide-slate-800 > * + * { border-color: #d1eadf !important; }
+
+/* Enforce white text on colored solid backgrounds in light mode */
+html.light-mode .bg-emerald-500.text-white, html.light-mode .bg-emerald-500 .text-white,
+html.light-mode .bg-sky-500.text-white, html.light-mode .bg-sky-500 .text-white,
+html.light-mode .bg-indigo-500.text-white, html.light-mode .bg-indigo-500 .text-white,
+html.light-mode .bg-amber-500.text-white, html.light-mode .bg-amber-500 .text-white,
+html.light-mode .bg-red-500.text-white, html.light-mode .bg-red-500 .text-white {
+  color: #ffffff !important;
+}
 
 /* Inputs */
 html.light-mode input[type="text"],

@@ -85,7 +85,7 @@ function DashboardLayout() {
         <nav className="flex-1 px-4 space-y-2 overflow-y-auto" onClick={closeSidebarOnMobile}>
           {/* Dashboard Utama */}
           <NavLink to="/dashboard" end
-            className={({ isActive }) => `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 font-medium'}`}>
+            className={({ isActive }) => `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 font-medium'}`}>
             <Home className="w-5 h-5" />
             <span>Dashboard</span>
           </NavLink>
