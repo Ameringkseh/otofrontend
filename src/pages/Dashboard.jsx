@@ -119,12 +119,9 @@ function Dashboard() {
       const res = await API.get('/api/stats');
       setStats(res.data);
       
-      try {
-        const vRes = await API.get('/api/vehicles');
-        setMyVehicles(Array.isArray(vRes.data) ? vRes.data : []);
-      } catch (vErr) {
-        // Abaikan jika route belum dibuat di backend
-      }
+      // Hapus pemanggilan ke /api/vehicles karena tidak ada di backend
+      // Hal ini menghilangkan pesan error 404 merah bawaan browser
+      setMyVehicles([]);
     } catch (err) { console.error(err); }
   };
 
