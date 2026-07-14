@@ -12,6 +12,8 @@ function Profile() {
   const [profileForm, setProfileForm] = useState({ full_name: '', email: '', phone_number: '', profile_photo: '' });
   const [profileLoading, setProfileLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
 
   const [pwdForm, setPwdForm] = useState({ old_password: '', new_password: '', confirm_password: '' });
@@ -47,19 +49,16 @@ function Profile() {
   };
 
   // --- Handlers ---
-  const handleUploadPhoto = async (e) => {
-    const file = e.target.files[0];
+  const processFile = async (file) => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Ukuran file maksimal 5MB');
-      e.target.value = '';
       return;
     }
     
     if (!file.type.match('image.*')) {
       toast.error('Hanya file gambar (JPG, PNG, GIF) yang diizinkan');
-      e.target.value = '';
       return;
     }
 
@@ -73,12 +72,17 @@ function Profile() {
       });
       setProfileForm({ ...profileForm, profile_photo: res.data.data.profile_photo });
       toast.success('Foto profil berhasil diperbarui! 🎉');
+      setShowUploadModal(false);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal mengupload foto');
     } finally {
       setUploadLoading(false);
-      e.target.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const handleUploadPhoto = (e) => {
+    processFile(e.target.files[0]);
   };
 
   const handleDeletePhoto = async () => {
@@ -204,9 +208,8 @@ function Profile() {
           </div>
           
           {/* Overlay Edit (Visible on Hover) */}
-          <div className="absolute inset-0 bg-slate-950/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-slate-950/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm cursor-pointer" onClick={() => setShowUploadModal(true)}>
             <button 
-              onClick={() => fileInputRef.current?.click()}
               disabled={uploadLoading}
               className="text-white hover:text-emerald-400 transition"
               title="Ganti Foto (Maks 5MB)"
@@ -215,7 +218,7 @@ function Profile() {
             </button>
             {profileForm.profile_photo && (
               <button 
-                onClick={handleDeletePhoto}
+                onClick={(e) => { e.stopPropagation(); handleDeletePhoto(); }}
                 disabled={uploadLoading}
                 className="text-white hover:text-red-400 transition"
                 title="Hapus Foto"
@@ -242,9 +245,6 @@ function Profile() {
                 : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
             }`}>
               {role === 'admin' ? <ShieldCheck className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />} {role === 'admin' ? 'Administrator' : 'Member'}
-            </span>
-            <span className="text-[11px] font-semibold text-slate-400 flex items-center bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
-              Maks 5MB (JPG, PNG)
             </span>
           </div>
         </div>
@@ -406,6 +406,65 @@ function Profile() {
           </div>
         </div>
       )}
+
+      {/* ═══ MODAL: UPLOAD FOTO PROFIL ═══ */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 animate-fadeIn">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setShowUploadModal(false)}></div>
+          <div className="relative w-full max-w-xl bg-slate-900 border border-slate-700 shadow-2xl rounded-3xl overflow-hidden animate-slideUp flex flex-col">
+            
+            <div className="flex justify-between items-center p-5 border-b border-slate-800">
+              <h3 className="text-xl font-bold text-white">Ganti Foto Profil</h3>
+              <button onClick={() => setShowUploadModal(false)} className="text-slate-500 hover:bg-slate-800 hover:text-white p-2 rounded-full transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-8">
+              <div 
+                className={`border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center transition-all duration-200 ${
+                  dragActive ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/60'
+                }`}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragActive(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    processFile(e.dataTransfer.files[0]);
+                  }
+                }}
+              >
+                {uploadLoading ? (
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mb-4"></div>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mb-4">
+                      <Camera className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-2">Tarik dan lepaskan file Anda di sini</h4>
+                    <p className="text-sm text-slate-400 mb-8">atau gunakan opsi di bawah ini</p>
+                    
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 bg-slate-800 border border-slate-600 hover:border-emerald-500 hover:text-emerald-400 text-slate-200 font-semibold px-5 py-2.5 rounded-full transition shadow-sm text-sm"
+                      >
+                        <Camera className="w-4 h-4" /> Upload File (Penyimpanan Lokal)
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-6">Mendukung format JPG, PNG, GIF (Maks. 5MB)</p>
+                  </>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
