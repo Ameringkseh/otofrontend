@@ -41,6 +41,8 @@ function Profile() {
         phone_number: data.phone_number || '',
         profile_photo: data.profile_photo || ''
       });
+      localStorage.setItem('profile_photo', data.profile_photo || '');
+      window.dispatchEvent(new Event('profileUpdated'));
       setVehicles(data.vehicles || []);
     } catch (err) {
       console.error(err);
@@ -71,6 +73,8 @@ function Profile() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setProfileForm({ ...profileForm, profile_photo: res.data.data.profile_photo });
+      localStorage.setItem('profile_photo', res.data.data.profile_photo || '');
+      window.dispatchEvent(new Event('profileUpdated'));
       toast.success('Foto profil berhasil diperbarui! 🎉');
       setShowUploadModal(false);
     } catch (err) {
@@ -91,6 +95,8 @@ function Profile() {
     try {
       await API.delete('/api/delete-profile-photo');
       setProfileForm({ ...profileForm, profile_photo: '' });
+      localStorage.removeItem('profile_photo');
+      window.dispatchEvent(new Event('profileUpdated'));
       toast.success('Foto profil berhasil dihapus!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal menghapus foto');

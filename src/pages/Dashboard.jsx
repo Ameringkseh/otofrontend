@@ -706,7 +706,13 @@ function Dashboard() {
                 <p className="text-slate-400 text-xs mb-3">Total: <span className="text-white font-bold">{pesertaList.length}</span> peserta terdaftar</p>
                 {pesertaList.map((p, i) => (
                   <div key={p.id} className="flex items-center gap-4 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3">
-                    <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 font-bold text-sm flex-shrink-0">{i+1}</div>
+                    <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 font-bold text-sm flex-shrink-0 overflow-hidden">
+                      {p.user?.profile_photo ? (
+                        <img src={p.user.profile_photo} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        i + 1
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-semibold text-sm">{p.user?.username || `User #${p.user_id}`}</p>
                       <p className="text-slate-400 text-xs">{p.bike_model} · <span className="font-mono text-slate-300">{p.license_plate}</span></p>

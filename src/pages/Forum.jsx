@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import API from '../api/axios';
-import { MessageSquare, Send, Users, Calendar, ArrowLeft } from 'lucide-react';
+import { MessageSquare, Send, Users, Calendar, ArrowLeft, User } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 export default function Forum() {
@@ -246,17 +246,33 @@ export default function Forum() {
                   }
 
                   return (
-                    <div key={msg.id} className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} ${isSameUserAsNext ? 'mb-1' : 'mb-4'}`}>
-                      {!isSameUserAsPrev && (
-                        <span className="text-[11px] text-slate-400 mb-1 px-1.5 font-bold tracking-wide">
-                          {isSelf ? 'Anda' : (msg.user?.username || 'User')}
-                        </span>
+                    <div key={msg.id} className={`flex w-full ${isSelf ? 'justify-end' : 'justify-start'} ${isSameUserAsNext ? 'mb-1' : 'mb-4'}`}>
+                      
+                      {!isSelf && !isSameUserAsNext && (
+                        <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 mr-2 mt-auto overflow-hidden border border-slate-700 flex items-center justify-center">
+                          {msg.user?.profile_photo ? (
+                            <img src={msg.user.profile_photo} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-4 h-4 text-slate-400" />
+                          )}
+                        </div>
                       )}
-                      <div className={`max-w-[85%] md:max-w-[65%] px-4 py-2.5 text-sm leading-relaxed ${bubbleClass}`}>
-                        {msg.message}
-                        <span className={`block text-[9px] mt-1.5 text-right font-bold uppercase tracking-wider ${isSelf ? 'text-sky-950/70' : 'text-slate-500'}`}>
-                          {new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
-                        </span>
+                      {!isSelf && isSameUserAsNext && (
+                        <div className="w-8 mr-2 flex-shrink-0"></div>
+                      )}
+
+                      <div className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[75%]`}>
+                        {!isSameUserAsPrev && (
+                          <span className="text-[11px] text-slate-400 mb-1 px-1.5 font-bold tracking-wide">
+                            {isSelf ? 'Anda' : (msg.user?.username || 'User')}
+                          </span>
+                        )}
+                        <div className={`px-4 py-2.5 text-sm leading-relaxed w-full ${bubbleClass}`}>
+                          {msg.message}
+                          <span className={`block text-[9px] mt-1.5 text-right font-bold uppercase tracking-wider ${isSelf ? 'text-sky-950/70' : 'text-slate-500'}`}>
+                            {new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );

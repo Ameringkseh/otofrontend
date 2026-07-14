@@ -35,6 +35,16 @@ function DashboardLayout() {
   const token = localStorage.getItem('token') || '';
   const username = localStorage.getItem('username') || 'User';
   const role = localStorage.getItem('role') || 'user';
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('profile_photo') || '');
+
+  // Dengarkan event perubahan profil
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfilePhoto(localStorage.getItem('profile_photo') || '');
+    };
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -149,8 +159,14 @@ function DashboardLayout() {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className={`w-full flex items-center gap-3 border rounded-2xl p-3 transition text-left group ${showProfileMenu ? 'bg-slate-800 border-slate-600' : 'bg-slate-800/40 hover:bg-slate-800 border-slate-700/50'}`}
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg flex-shrink-0 text-slate-900">
-              {role === 'admin' ? <ShieldCheck className="w-5 h-5" /> : <User className="w-5 h-5" />}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg flex-shrink-0 text-slate-900 overflow-hidden">
+              {profilePhoto ? (
+                <img src={profilePhoto} alt="Profil" className="w-full h-full object-cover" />
+              ) : role === 'admin' ? (
+                <ShieldCheck className="w-5 h-5" />
+              ) : (
+                <User className="w-5 h-5" />
+              )}
             </div>
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-bold text-white truncate">{username}</p>

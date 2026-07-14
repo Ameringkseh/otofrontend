@@ -98,6 +98,7 @@ function Auth() {
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('role', res.data.role);
         localStorage.setItem('username', formData.username.trim());
+        localStorage.setItem('profile_photo', res.data.profile_photo || '');
         toast.success(`Selamat datang, ${formData.username}!`);
         navigate('/dashboard');
       }
