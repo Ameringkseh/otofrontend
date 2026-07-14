@@ -47,43 +47,43 @@
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
-/* ─── Light Mode Overrides (Refined for Eye Comfort) ──────── */
+/* ─── Light Mode Overrides (Refined for Eye Comfort & Theme) ── */
 html.light-mode {
   color-scheme: light;
 }
 
 html.light-mode body {
-  background-color: #f8fafc; /* Softer, cleaner background */
-  color: #1e293b; /* slate-800 */
+  background-color: #f4fbf8; /* Very soft emerald-tinted white for main background */
+  color: #1f2937; /* gray-800 */
 }
 
-/* Backgrounds */
-html.light-mode .bg-slate-950 { background-color: #f8fafc !important; }
+/* Backgrounds (Replacing slate with Emerald-tinted neutrals) */
+html.light-mode .bg-slate-950 { background-color: #f4fbf8 !important; }
 html.light-mode .bg-slate-900 { background-color: #ffffff !important; }
 html.light-mode .bg-slate-800\/50, html.light-mode .bg-slate-800\/40, html.light-mode .bg-slate-800\/60 {
-  background-color: rgba(241, 245, 249, 0.8) !important; /* slate-100 */
+  background-color: rgba(232, 245, 241, 0.7) !important; /* soft emerald tint */
 }
-html.light-mode .bg-slate-800 { background-color: #f1f5f9 !important; }
-html.light-mode .bg-slate-700 { background-color: #e2e8f0 !important; }
+html.light-mode .bg-slate-800 { background-color: #e8f5f1 !important; }
+html.light-mode .bg-slate-700 { background-color: #dcf0e9 !important; }
 
-/* Borders */
-html.light-mode .border-slate-800 { border-color: #e2e8f0 !important; }
-html.light-mode .border-slate-800\/50 { border-color: rgba(226,232,240,0.8) !important; }
-html.light-mode .border-slate-700 { border-color: #cbd5e1 !important; }
-html.light-mode .border-slate-700\/50 { border-color: rgba(203,213,225,0.8) !important; }
-html.light-mode .border-slate-700\/60 { border-color: rgba(203,213,225,0.9) !important; }
+/* Borders (Soft emerald/mint instead of muddy gray) */
+html.light-mode .border-slate-800 { border-color: #d1eadf !important; }
+html.light-mode .border-slate-800\/50 { border-color: rgba(209, 234, 223, 0.7) !important; }
+html.light-mode .border-slate-700 { border-color: #bce0d1 !important; }
+html.light-mode .border-slate-700\/50 { border-color: rgba(188, 224, 209, 0.7) !important; }
+html.light-mode .border-slate-700\/60 { border-color: rgba(188, 224, 209, 0.8) !important; }
 
-/* Text */
-html.light-mode .text-white { color: #0f172a !important; }
-html.light-mode .text-slate-100 { color: #1e293b !important; }
-html.light-mode .text-slate-200 { color: #334155 !important; }
-html.light-mode .text-slate-300 { color: #475569 !important; }
-html.light-mode .text-slate-400 { color: #64748b !important; }
-html.light-mode .text-slate-500 { color: #64748b !important; }
-html.light-mode .text-slate-600 { color: #94a3b8 !important; }
+/* Text (Replacing blueish slate with neutral grays) */
+html.light-mode .text-white { color: #111827 !important; } /* gray-900 */
+html.light-mode .text-slate-100 { color: #1f2937 !important; }
+html.light-mode .text-slate-200 { color: #374151 !important; }
+html.light-mode .text-slate-300 { color: #4b5563 !important; }
+html.light-mode .text-slate-400 { color: #6b7280 !important; }
+html.light-mode .text-slate-500 { color: #6b7280 !important; }
+html.light-mode .text-slate-600 { color: #9ca3af !important; }
 html.light-mode .text-slate-950 { color: #ffffff !important; } /* White text for primary buttons */
 
-/* Tame Emerald / Green Colors for Light Mode (Darker = Better Contrast) */
+/* Tame Emerald / Green Colors for Light Mode */
 html.light-mode .text-emerald-400, html.light-mode .text-emerald-500 { color: #059669 !important; }
 html.light-mode .bg-emerald-400 { background-color: #10b981 !important; }
 html.light-mode .bg-emerald-500 { background-color: #059669 !important; }
@@ -105,9 +105,9 @@ html.light-mode .to-sky-400 { --tw-gradient-to: #0ea5e9 !important; }
 html.light-mode .hover\:bg-sky-500:hover, html.light-mode .hover\:bg-sky-400:hover { background-color: #0369a1 !important; }
 
 /* Hover & dividers */
-html.light-mode .hover\:bg-slate-800\/40:hover { background-color: rgba(226,232,240,0.9) !important; }
-html.light-mode .hover\:bg-slate-800:hover { background-color: #e2e8f0 !important; }
-html.light-mode .divide-slate-800 > * + * { border-color: #e2e8f0 !important; }
+html.light-mode .hover\:bg-slate-800\/40:hover { background-color: rgba(209, 234, 223, 0.7) !important; }
+html.light-mode .hover\:bg-slate-800:hover { background-color: #d1eadf !important; }
+html.light-mode .divide-slate-800 > * + * { border-color: #d1eadf !important; }
 
 /* Inputs */
 html.light-mode input[type="text"],
@@ -119,26 +119,26 @@ html.light-mode input[type="tel"],
 html.light-mode select,
 html.light-mode textarea {
   background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #1e293b !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border-color: #bce0d1 !important;
+  color: #1f2937 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
 html.light-mode input:focus, html.light-mode textarea:focus {
   border-color: #059669 !important;
-  box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.3) !important;
+  box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.25) !important;
 }
 html.light-mode input::placeholder,
-html.light-mode textarea::placeholder { color: #94a3b8 !important; }
+html.light-mode textarea::placeholder { color: #9ca3af !important; }
 
 /* Skeleton light mode */
 html.light-mode .skeleton-shimmer {
-  background-color: rgb(226 232 240 / 0.8);
+  background-color: rgb(232 245 241 / 0.8);
 }
 html.light-mode .skeleton-shimmer::after {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgb(203 213 225 / 0.8) 50%,
+    rgb(209 234 223 / 0.8) 50%,
     transparent 100%
   );
 }
@@ -148,8 +148,8 @@ html.light-mode .backdrop-blur-xl { backdrop-filter: blur(16px); }
 html.light-mode .bg-slate-900\/80 { background-color: rgba(255,255,255,0.95) !important; }
 
 /* Shadow adjustments for light mode */
-html.light-mode .shadow-xl { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03) !important; }
-html.light-mode .shadow-2xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025) !important; }
+html.light-mode .shadow-xl { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02) !important; }
+html.light-mode .shadow-2xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04), 0 4px 6px -2px rgba(0,0,0,0.02) !important; }
 
 /* ─── Mobile Responsive Helpers ─────────────────────── */
 @media (max-width: 640px) {
