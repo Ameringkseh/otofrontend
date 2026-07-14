@@ -9,7 +9,23 @@ function DashboardLayout() {
   const { isDark, toggle: toggleTheme } = useTheme();
   const toast = useToast();
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const closeSidebarOnMobile = () => {
+    if (window.innerWidth < 768) setIsSidebarOpen(false);
+  };
   
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
@@ -37,10 +53,22 @@ function DashboardLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-950 text-white flex overflow-hidden">
       
+      {/* ─── OVERLAY MOBILE ─── */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 md:hidden animate-fadeIn"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* ─── SIDEBAR (MAIN NAVIGATION) ─── */}
-      <div className={`${isSidebarOpen ? 'w-full md:w-72 border-r' : 'w-0 border-r-0'} bg-slate-900 border-slate-800 flex flex-col flex-shrink-0 z-30 shadow-2xl md:shadow-none transition-all duration-300 overflow-hidden`}>
+      <div className={`
+        fixed md:static inset-y-0 left-0 z-50
+        ${isSidebarOpen ? 'translate-x-0 w-[280px] md:w-72' : '-translate-x-full md:translate-x-0 w-[280px] md:w-0 border-r-0'} 
+        border-r border-slate-800 bg-slate-900 flex flex-col flex-shrink-0 shadow-2xl md:shadow-none transition-all duration-300 overflow-hidden
+      `}>
         
         {/* Logo & Header Sidebar */}
         <div className="p-6 pb-4 border-b border-slate-800/50 mb-4">
@@ -54,7 +82,7 @@ function DashboardLayout() {
         </div>
 
         {/* Navigasi Links */}
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto" onClick={closeSidebarOnMobile}>
           {/* Dashboard Utama */}
           <NavLink to="/dashboard" end
             className={({ isActive }) => `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 font-medium'}`}>
