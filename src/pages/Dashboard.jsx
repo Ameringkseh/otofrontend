@@ -69,6 +69,8 @@ function Dashboard() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua');
+  const [dateFilter, setDateFilter] = useState('');
+  const [chartFilter, setChartFilter] = useState('Semua');
   const [stats, setStats] = useState({ total_users: 0, total_tourings: 0, total_registrations: 0 });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -282,8 +284,45 @@ function Dashboard() {
       const badge = getStatusBadge(tanggalRaw, kuota, count);
       if (badge?.label !== statusFilter) return false;
     }
+
+    if (dateFilter) {
+      const tanggalRaw = item.tanggal || item.departure_date;
+      if (!tanggalRaw || !tanggalRaw.startsWith(dateFilter)) return false;
+    }
+
     return true;
   });
+
+  const getFilteredChartData = () => {
+    let filtered = tourings;
+    const today = new Date();
+    
+    if (chartFilter === 'Minggu Ini') {
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0,0,0,0);
+      const endOfWeek = new Date(today);
+      endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+      endOfWeek.setHours(23,59,59,999);
+      
+      filtered = tourings.filter(t => {
+        const d = new Date(t.tanggal || t.departure_date);
+        return d >= startOfWeek && d <= endOfWeek;
+      });
+    } else if (chartFilter === 'Bulan Ini') {
+      filtered = tourings.filter(t => {
+        const d = new Date(t.tanggal || t.departure_date);
+        return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+      });
+    } else if (chartFilter === 'Tahun Ini') {
+      filtered = tourings.filter(t => {
+        const d = new Date(t.tanggal || t.departure_date);
+        return d.getFullYear() === today.getFullYear();
+      });
+    }
+
+    return filtered.map(t => ({ uniqueName: `${t.id}-${t.nama_touring || t.title}`, rawName: (t.nama_touring || t.title), peserta: t.peserta_count || 0 }));
+  };
 
   const handleExportExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredTourings.map(t => ({
@@ -371,24 +410,38 @@ function Dashboard() {
       </div>
 
       {/* BAR CHART */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl mb-8 hidden md:block">
-        <h2 className="text-xl font-bold text-slate-200 mb-6 flex items-center gap-2">
-          <BarChart2 className="w-6 h-6 text-emerald-400" /> Grafik Peserta per Agenda
-        </h2>
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-            <BarChart data={tourings.map(t => ({ uniqueName: `${t.id}-${t.nama_touring || t.title}`, rawName: (t.nama_touring || t.title), peserta: t.peserta_count || 0 }))}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-              <XAxis dataKey="uniqueName" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => getShortName(val.substring(val.indexOf('-') + 1))} />
-              <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip 
-                labelFormatter={(label) => (label && typeof label === 'string' && label.includes('-')) ? label.substring(label.indexOf('-') + 1) : label}
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }}
-                itemStyle={{ color: '#10b981' }}
-              />
-              <Bar dataKey="peserta" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+            <BarChart2 className="w-5 h-5 text-emerald-400" /> Grafik Peserta per Agenda
+          </h2>
+          <select
+            className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full sm:w-40"
+            value={chartFilter}
+            onChange={(e) => setChartFilter(e.target.value)}
+          >
+            <option value="Semua">Semua Waktu</option>
+            <option value="Minggu Ini">Minggu Ini</option>
+            <option value="Bulan Ini">Bulan Ini</option>
+            <option value="Tahun Ini">Tahun Ini</option>
+          </select>
+        </div>
+        <div className="h-72 w-full overflow-x-auto overflow-y-hidden">
+          <div className="min-w-[600px] h-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={getFilteredChartData()}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                <XAxis dataKey="uniqueName" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => getShortName(val.substring(val.indexOf('-') + 1))} />
+                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  labelFormatter={(label) => (label && typeof label === 'string' && label.includes('-')) ? label.substring(label.indexOf('-') + 1) : label}
+                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }}
+                  itemStyle={{ color: '#10b981' }}
+                />
+                <Bar dataKey="peserta" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
       {/* TABEL AGENDA */}
@@ -397,13 +450,19 @@ function Dashboard() {
           <h2 className="text-xl font-bold text-slate-200 flex items-center gap-2">
             <CalendarDays className="w-6 h-6 text-emerald-400" /> Agenda Jadwal Touring
           </h2>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
             <input 
               type="text" 
               placeholder="Cari event atau tujuan..."
-              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full sm:w-64"
+              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full sm:w-56"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <input 
+              type="date"
+              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full sm:w-40 [color-scheme:dark]"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
             />
             <select
               className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full sm:w-40"
