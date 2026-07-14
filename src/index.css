@@ -60,6 +60,8 @@ html.light-mode body {
 /* Backgrounds (Replacing slate with Emerald-tinted neutrals) */
 html.light-mode .bg-slate-950 { background-color: #f4fbf8 !important; }
 html.light-mode .bg-slate-900 { background-color: #ffffff !important; }
+html.light-mode .bg-slate-900\/50 { background-color: rgba(232, 245, 241, 0.85) !important; } /* Header backdrop */
+html.light-mode .bg-slate-900\/30 { background-color: rgba(232, 245, 241, 0.6) !important; } /* Footer backdrop */
 html.light-mode .bg-slate-800\/50, html.light-mode .bg-slate-800\/40, html.light-mode .bg-slate-800\/60 {
   background-color: rgba(232, 245, 241, 0.7) !important; /* soft emerald tint */
 }
