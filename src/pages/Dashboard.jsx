@@ -5,7 +5,7 @@ import { SkeletonRow } from '../components/Skeleton';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { BarChart2, CalendarDays, UserPlus, MessageSquare, Users, Edit, Trash2, ChevronDown, ChevronRight, AlertTriangle, X, Download, FileText } from 'lucide-react';
 
 // ─── Helper ──────────────────────────────────────────────
@@ -273,16 +273,26 @@ function Dashboard() {
   const handleExportExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredTourings.map(t => ({
       ID: t.id,
-      Nama: t.nama_touring || t.title,
+      "Nama Event": t.nama_touring || t.title,
       Tujuan: t.tujuan || t.destination,
       Tanggal: formatTanggal(t.tanggal || t.departure_date),
-      Waktu: t.waktu,
       Kuota: t.kuota || t.max_participants,
-      JumlahPeserta: t.peserta_count || 0
+      "Jumlah Peserta": t.peserta_count || 0
     })));
+    
+    // Memberikan lebar kolom (width) agar rapi saat dibuka di Excel
+    ws['!cols'] = [
+      { wch: 5 },  // ID
+      { wch: 25 }, // Nama Event
+      { wch: 20 }, // Tujuan
+      { wch: 20 }, // Tanggal
+      { wch: 10 }, // Kuota
+      { wch: 15 }  // Jumlah Peserta
+    ];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Touring");
-    XLSX.writeFile(wb, "Data_Touring.xlsx");
+    XLSX.writeFile(wb, "Data_Touring_OtoMeet.xlsx");
   };
 
   const handleExportPDF = () => {
@@ -304,13 +314,17 @@ function Dashboard() {
       tableRows.push(rowData);
     });
 
-    doc.autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
-      startY: 20,
+      startY: 25,
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
     });
     
-    doc.save("Data_Touring.pdf");
+    doc.save("Data_Touring_OtoMeet.pdf");
   };
 
   const handleSort = (field) => {
