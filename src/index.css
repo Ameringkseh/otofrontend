@@ -47,43 +47,66 @@
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
-/* ─── Light Mode Overrides ───────────────────────────── */
+/* ─── Light Mode Overrides (Refined for Eye Comfort) ──────── */
 html.light-mode {
   color-scheme: light;
 }
 
 html.light-mode body {
-  background-color: #f1f5f9; /* slate-100 */
+  background-color: #f8fafc; /* Softer, cleaner background */
   color: #1e293b; /* slate-800 */
 }
 
 /* Backgrounds */
-html.light-mode .bg-slate-950 { background-color: #f1f5f9 !important; }
+html.light-mode .bg-slate-950 { background-color: #f8fafc !important; }
 html.light-mode .bg-slate-900 { background-color: #ffffff !important; }
 html.light-mode .bg-slate-800\/50, html.light-mode .bg-slate-800\/40, html.light-mode .bg-slate-800\/60 {
-  background-color: rgba(226, 232, 240, 0.6) !important;
+  background-color: rgba(241, 245, 249, 0.8) !important; /* slate-100 */
 }
-html.light-mode .bg-slate-800 { background-color: #e2e8f0 !important; }
-html.light-mode .bg-slate-700 { background-color: #cbd5e1 !important; }
+html.light-mode .bg-slate-800 { background-color: #f1f5f9 !important; }
+html.light-mode .bg-slate-700 { background-color: #e2e8f0 !important; }
 
 /* Borders */
 html.light-mode .border-slate-800 { border-color: #e2e8f0 !important; }
-html.light-mode .border-slate-800\/50 { border-color: rgba(226,232,240,0.7) !important; }
+html.light-mode .border-slate-800\/50 { border-color: rgba(226,232,240,0.8) !important; }
 html.light-mode .border-slate-700 { border-color: #cbd5e1 !important; }
-html.light-mode .border-slate-700\/50 { border-color: rgba(203,213,225,0.7) !important; }
-html.light-mode .border-slate-700\/60 { border-color: rgba(203,213,225,0.8) !important; }
+html.light-mode .border-slate-700\/50 { border-color: rgba(203,213,225,0.8) !important; }
+html.light-mode .border-slate-700\/60 { border-color: rgba(203,213,225,0.9) !important; }
 
 /* Text */
 html.light-mode .text-white { color: #0f172a !important; }
+html.light-mode .text-slate-100 { color: #1e293b !important; }
 html.light-mode .text-slate-200 { color: #334155 !important; }
 html.light-mode .text-slate-300 { color: #475569 !important; }
 html.light-mode .text-slate-400 { color: #64748b !important; }
-html.light-mode .text-slate-500 { color: #94a3b8 !important; }
+html.light-mode .text-slate-500 { color: #64748b !important; }
 html.light-mode .text-slate-600 { color: #94a3b8 !important; }
-html.light-mode .text-slate-950 { color: #f8fafc !important; }
+html.light-mode .text-slate-950 { color: #ffffff !important; } /* White text for primary buttons */
+
+/* Tame Emerald / Green Colors for Light Mode (Darker = Better Contrast) */
+html.light-mode .text-emerald-400, html.light-mode .text-emerald-500 { color: #059669 !important; }
+html.light-mode .bg-emerald-400 { background-color: #10b981 !important; }
+html.light-mode .bg-emerald-500 { background-color: #059669 !important; }
+html.light-mode .border-emerald-400 { border-color: #059669 !important; }
+html.light-mode .border-emerald-500, html.light-mode .border-emerald-500\/30 { border-color: #047857 !important; }
+html.light-mode .from-emerald-400 { --tw-gradient-from: #10b981 !important; }
+html.light-mode .from-emerald-500 { --tw-gradient-from: #059669 !important; }
+html.light-mode .to-emerald-300 { --tw-gradient-to: #34d399 !important; }
+html.light-mode .to-emerald-400 { --tw-gradient-to: #10b981 !important; }
+html.light-mode .to-emerald-600 { --tw-gradient-to: #047857 !important; }
+html.light-mode .hover\:bg-emerald-500:hover, html.light-mode .hover\:bg-emerald-400:hover { background-color: #047857 !important; }
+
+/* Tame Sky / Blue Colors */
+html.light-mode .text-sky-400, html.light-mode .text-sky-500 { color: #0284c7 !important; }
+html.light-mode .bg-sky-400, html.light-mode .bg-sky-500 { background-color: #0284c7 !important; }
+html.light-mode .from-sky-400 { --tw-gradient-from: #0ea5e9 !important; }
+html.light-mode .from-sky-500 { --tw-gradient-from: #0284c7 !important; }
+html.light-mode .to-sky-400 { --tw-gradient-to: #0ea5e9 !important; }
+html.light-mode .hover\:bg-sky-500:hover, html.light-mode .hover\:bg-sky-400:hover { background-color: #0369a1 !important; }
 
 /* Hover & dividers */
-html.light-mode .hover\:bg-slate-800\/40:hover { background-color: rgba(226,232,240,0.5) !important; }
+html.light-mode .hover\:bg-slate-800\/40:hover { background-color: rgba(226,232,240,0.9) !important; }
+html.light-mode .hover\:bg-slate-800:hover { background-color: #e2e8f0 !important; }
 html.light-mode .divide-slate-800 > * + * { border-color: #e2e8f0 !important; }
 
 /* Inputs */
@@ -95,9 +118,14 @@ html.light-mode input[type="email"],
 html.light-mode input[type="tel"],
 html.light-mode select,
 html.light-mode textarea {
-  background-color: #f8fafc !important;
+  background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
   color: #1e293b !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+html.light-mode input:focus, html.light-mode textarea:focus {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.3) !important;
 }
 html.light-mode input::placeholder,
 html.light-mode textarea::placeholder { color: #94a3b8 !important; }
@@ -117,11 +145,11 @@ html.light-mode .skeleton-shimmer::after {
 
 /* Backdrop blur cards in light mode */
 html.light-mode .backdrop-blur-xl { backdrop-filter: blur(16px); }
-html.light-mode .bg-slate-900\/80 { background-color: rgba(255,255,255,0.9) !important; }
+html.light-mode .bg-slate-900\/80 { background-color: rgba(255,255,255,0.95) !important; }
 
 /* Shadow adjustments for light mode */
-html.light-mode .shadow-xl { box-shadow: 0 8px 32px -4px rgba(0,0,0,0.08), 0 2px 8px -2px rgba(0,0,0,0.04); }
-html.light-mode .shadow-2xl { box-shadow: 0 16px 48px -8px rgba(0,0,0,0.12), 0 4px 16px -4px rgba(0,0,0,0.06); }
+html.light-mode .shadow-xl { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03) !important; }
+html.light-mode .shadow-2xl { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025) !important; }
 
 /* ─── Mobile Responsive Helpers ─────────────────────── */
 @media (max-width: 640px) {
