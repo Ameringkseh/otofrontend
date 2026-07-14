@@ -491,8 +491,16 @@ function Dashboard() {
                       <td className="py-3.5 px-4">
                         <div className="flex items-center justify-center gap-1.5 whitespace-nowrap">
                           {/* Gabung - hanya untuk user biasa */}
-                          <button onClick={() => openGabung(item)}
-                            className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
+                          <button 
+                            onClick={() => {
+                               if (status && status.label !== 'Akan Datang') {
+                                  toast.error(`Tidak bisa bergabung. Status: ${status.label}`);
+                                  return;
+                               }
+                               openGabung(item);
+                            }}
+                            disabled={status && status.label !== 'Akan Datang'}
+                            className={`inline-flex items-center gap-1.5 border text-xs font-semibold px-2.5 py-1.5 rounded-lg transition whitespace-nowrap ${status && status.label === 'Akan Datang' ? 'bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-60'}`}>
                             <UserPlus className="w-3.5 h-3.5" /> Gabung
                           </button>
                           {/* Diskusi - redirect ke halaman forum */}
