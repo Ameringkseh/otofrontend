@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
 import { SkeletonRow } from '../components/Skeleton';
@@ -59,7 +60,9 @@ function ModalHeader({ title, subtitle, subtitleColor = 'text-emerald-400', onCl
 // ═══════════════════════════════════════════════════════════
 // KOMPONEN UTAMA DASHBOARD
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 function Dashboard() {
+  const navigate = useNavigate();
   const toast = useToast();
   const [tourings, setTourings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -481,7 +484,13 @@ function Dashboard() {
                             <UserPlus className="w-3.5 h-3.5" /> Gabung
                           </button>
                           {/* Diskusi - redirect ke halaman forum */}
-                          <button onClick={() => navigate(`/dashboard/forum?id=${item.id}`)}
+                          <button onClick={() => {
+                            if (role === 'admin' || item.is_joined) {
+                              navigate(`/dashboard/forum?id=${item.id}`);
+                            } else {
+                              toast.error("Akses Ditolak: Anda belum menjadi anggota touring ini. Silakan 'Gabung' terlebih dahulu.");
+                            }
+                          }}
                             className="inline-flex items-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/25 text-indigo-400 border border-indigo-500/30 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition whitespace-nowrap">
                             <MessageSquare className="w-3.5 h-3.5" /> Forum
                           </button>
