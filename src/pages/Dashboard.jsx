@@ -119,9 +119,12 @@ function Dashboard() {
       const res = await API.get('/api/stats');
       setStats(res.data);
       
-      // Hapus pemanggilan ke /api/vehicles karena tidak ada di backend
-      // Hal ini menghilangkan pesan error 404 merah bawaan browser
-      setMyVehicles([]);
+      try {
+        const vRes = await API.get('/api/vehicles');
+        setMyVehicles(Array.isArray(vRes.data?.data) ? vRes.data.data : []);
+      } catch (vErr) {
+        setMyVehicles([]);
+      }
     } catch (err) { console.error(err); }
   };
 
