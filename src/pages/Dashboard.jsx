@@ -293,6 +293,28 @@ function Dashboard() {
     return true;
   });
 
+  // Urutkan di frontend sebagai pengaman ganda jika backend belum di-deploy
+  const sortedAndFilteredTourings = filteredTourings.sort((a, b) => {
+    if (sortField) return 0; // Biarkan backend yang urutkan jika user klik header
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateA = new Date(a.tanggal || a.departure_date);
+    const dateB = new Date(b.tanggal || b.departure_date);
+    
+    const isAUpcoming = dateA >= today;
+    const isBUpcoming = dateB >= today;
+    
+    if (isAUpcoming && !isBUpcoming) return -1;
+    if (!isAUpcoming && isBUpcoming) return 1;
+    
+    if (isAUpcoming) {
+      return dateA - dateB;
+    } else {
+      return dateB - dateA;
+    }
+  });
+
   const getFilteredChartData = () => {
     let filtered = tourings;
     const today = new Date();
@@ -325,7 +347,7 @@ function Dashboard() {
   };
 
   const handleExportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredTourings.map(t => ({
+    const ws = XLSX.utils.json_to_sheet(sortedAndFilteredTourings.map(t => ({
       ID: t.id,
       "Nama Event": t.nama_touring || t.title,
       Tujuan: t.tujuan || t.destination,
@@ -353,17 +375,22 @@ function Dashboard() {
     const doc = new jsPDF();
     doc.text("Data Agenda Touring", 14, 15);
     
-    const tableColumn = ["ID", "Nama Event", "Tujuan", "Tanggal", "Kuota", "Peserta"];
+    const tableColumn = ["Nama Event", "Tujuan", "Tanggal", "Kuota", "Status", "Peserta"];
     const tableRows = [];
 
-    filteredTourings.forEach(t => {
+    sortedAndFilteredTourings.forEach(t => {
+      const tanggalRaw = t.tanggal || t.departure_date;
+      const kuota = t.kuota || t.max_participants || 0;
+      const count = t.peserta_count || 0;
+      const status = getStatusBadge(tanggalRaw, kuota, count);
+      
       const rowData = [
-        t.id,
         t.nama_touring || t.title,
         t.tujuan || t.destination,
-        formatTanggal(t.tanggal || t.departure_date),
-        t.kuota || t.max_participants,
-        t.peserta_count || 0
+        formatTanggal(tanggalRaw),
+        kuota,
+        status?.label || '-',
+        count
       ];
       tableRows.push(rowData);
     });
@@ -522,7 +549,7 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 text-sm">
-                {filteredTourings.map((item) => {
+                {sortedAndFilteredTourings.map((item) => {
                   const tanggalRaw = item.tanggal || item.departure_date;
                   const kuota = item.kuota || item.max_participants || 0;
                   const count = item.peserta_count || 0;
