@@ -60,10 +60,13 @@ html.light-mode body {
 /* Backgrounds (Replacing slate with Emerald-tinted neutrals) */
 html.light-mode .bg-slate-950 { background-color: #f4fbf8 !important; }
 html.light-mode .bg-slate-900 { background-color: #ffffff !important; }
-html.light-mode .bg-slate-900\/50 { background-color: rgba(232, 245, 241, 0.85) !important; } /* Header backdrop */
-html.light-mode .bg-slate-900\/30 { background-color: rgba(232, 245, 241, 0.6) !important; } /* Footer backdrop */
+html.light-mode .bg-slate-900\/50 { background-color: rgba(232, 245, 241, 0.85) !important; }
+html.light-mode .bg-slate-900\/30 { background-color: rgba(232, 245, 241, 0.6) !important; }
+html.light-mode .bg-slate-800\/10 { background-color: rgba(232, 245, 241, 0.3) !important; }
+html.light-mode .bg-slate-800\/20 { background-color: rgba(232, 245, 241, 0.5) !important; }
+html.light-mode .bg-slate-800\/30 { background-color: rgba(232, 245, 241, 0.6) !important; }
 html.light-mode .bg-slate-800\/50, html.light-mode .bg-slate-800\/40, html.light-mode .bg-slate-800\/60 {
-  background-color: rgba(232, 245, 241, 0.7) !important; /* soft emerald tint */
+  background-color: rgba(232, 245, 241, 0.8) !important; /* soft emerald tint */
 }
 html.light-mode .bg-slate-800 { background-color: #e8f5f1 !important; }
 html.light-mode .bg-slate-700 { background-color: #dcf0e9 !important; }
@@ -109,6 +112,8 @@ html.light-mode .hover\:bg-sky-500:hover, html.light-mode .hover\:bg-sky-400:hov
 /* Hover & dividers */
 html.light-mode .hover\:bg-slate-800\/40:hover { background-color: rgba(209, 234, 223, 0.7) !important; }
 html.light-mode .hover\:bg-slate-800:hover { background-color: #d1eadf !important; }
+html.light-mode .hover\:bg-slate-700:hover { background-color: #bce0d1 !important; }
+html.light-mode .hover\:text-white:hover { color: #047857 !important; }
 html.light-mode .divide-slate-800 > * + * { border-color: #d1eadf !important; }
 
 /* Inputs */
