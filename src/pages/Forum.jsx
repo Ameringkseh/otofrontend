@@ -19,6 +19,7 @@ export default function Forum() {
   
   const chatBottomRef = useRef(null);
   const lastMsgIdRef = useRef(0);
+  const renderedLastMsgIdRef = useRef(0);
   
   const username = localStorage.getItem('username') || 'User';
 
@@ -55,8 +56,15 @@ export default function Forum() {
 
   // 3. Auto-scroll ke bawah saat ada pesan baru
   useEffect(() => {
-    if (chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0) {
+      const currentLastId = messages[messages.length - 1].id;
+      // Hanya scroll ke bawah JIKA ada id pesan baru (mencegah scroll paksa saat polling biasa)
+      if (currentLastId !== renderedLastMsgIdRef.current) {
+        if (chatBottomRef.current) {
+          chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+        renderedLastMsgIdRef.current = currentLastId;
+      }
     }
   }, [messages]);
 
@@ -94,6 +102,7 @@ export default function Forum() {
 
     if (activeTouring) {
       lastMsgIdRef.current = 0; // Reset ID saat pindah grup
+      renderedLastMsgIdRef.current = 0; // Reset tracker scroll
       fetchMessages(false); // Fetch awal (muncul loading)
       
       // Polling setiap 3 detik
