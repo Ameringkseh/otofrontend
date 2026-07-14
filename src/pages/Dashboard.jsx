@@ -101,6 +101,7 @@ function Dashboard() {
   const username = localStorage.getItem('username') || 'User';
   const role = localStorage.getItem('role') || 'user';
   const [myVehicles, setMyVehicles] = useState([]);
+  const [myTourings, setMyTourings] = useState([]);
 
   // Fungsi helper untuk menyingkat nama agenda di XAxis
   const getShortName = (text) => {
@@ -136,6 +137,13 @@ function Dashboard() {
       });
       setTourings(res.data.data || []);
       setTotalPages(res.data.total_page || 1);
+      
+      // Ambil daftar touring yang diikuti oleh user saat ini
+      if (role !== 'admin') {
+        const myRes = await API.get('/api/my-touring');
+        const myData = Array.isArray(myRes.data) ? myRes.data : [];
+        setMyTourings(myData.map(reg => reg.touring_id));
+      }
     } catch (err) {
       console.error(err);
       setError('Gagal memuat jadwal touring.');
@@ -170,6 +178,10 @@ function Dashboard() {
     try {
       await API.post('/api/register-touring', { touring_id: gabungModal.id, ...gabungForm });
       toast.success('Berhasil bergabung ke agenda touring! 🎉');
+      
+      // Update state myTourings agar tombol Forum langsung aktif
+      setMyTourings([...myTourings, gabungModal.id]);
+      
       closeGabung();
     } catch (err) {
       const msg = err.response?.data?.message || 'Gagal mendaftar.';
@@ -485,7 +497,8 @@ function Dashboard() {
                           </button>
                           {/* Diskusi - redirect ke halaman forum */}
                           <button onClick={() => {
-                            if (role === 'admin' || item.is_joined) {
+                            const isJoined = item.is_joined || myTourings.includes(item.id);
+                            if (role === 'admin' || isJoined) {
                               navigate(`/dashboard/forum?id=${item.id}`);
                             } else {
                               toast.error("Akses Ditolak: Anda belum menjadi anggota touring ini. Silakan 'Gabung' terlebih dahulu.");
