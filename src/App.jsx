@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastProvider } from './components/Toast';
 import { ThemeProvider } from './components/ThemeContext';
+import NotificationProvider from './components/NotificationProvider';
 
 function App() {
   return (
@@ -21,7 +22,9 @@ function App() {
           
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              <DashboardLayout />
+              <NotificationProvider>
+                <DashboardLayout />
+              </NotificationProvider>
             </ProtectedRoute>
           }>
             <Route index element={<Dashboard />} />

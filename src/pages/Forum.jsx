@@ -81,16 +81,8 @@ export default function Forum() {
         const data = Array.isArray(res.data) ? res.data : [];
         setMessages(data);
         
-        // Cek notifikasi pesan baru (hanya jika polling / silent fetch)
         if (data.length > 0) {
           const latestMsg = data[data.length - 1];
-          if (silent && lastMsgIdRef.current !== 0 && latestMsg.id > lastMsgIdRef.current && latestMsg.user?.username !== username) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(`Pesan baru di ${activeTouring.nama_touring || activeTouring.title}`, {
-                body: `${latestMsg.user?.username}: ${latestMsg.message}`
-              });
-            }
-          }
           lastMsgIdRef.current = latestMsg.id;
         }
       } catch (err) {
