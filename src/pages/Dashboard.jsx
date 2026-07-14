@@ -4,7 +4,9 @@ import { useToast } from '../components/Toast';
 import { SkeletonRow } from '../components/Skeleton';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import * as XLSX from 'xlsx';
-import { BarChart2, CalendarDays, UserPlus, MessageSquare, Users, Edit, Trash2, ChevronDown, ChevronRight, AlertTriangle, X, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { BarChart2, CalendarDays, UserPlus, MessageSquare, Users, Edit, Trash2, ChevronDown, ChevronRight, AlertTriangle, X, Download, FileText } from 'lucide-react';
 
 // ─── Helper ──────────────────────────────────────────────
 const formatTanggal = (val) => {
@@ -283,6 +285,34 @@ function Dashboard() {
     XLSX.writeFile(wb, "Data_Touring.xlsx");
   };
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Data Agenda Touring", 14, 15);
+    
+    const tableColumn = ["ID", "Nama Event", "Tujuan", "Tanggal", "Kuota", "Peserta"];
+    const tableRows = [];
+
+    filteredTourings.forEach(t => {
+      const rowData = [
+        t.id,
+        t.nama_touring || t.title,
+        t.tujuan || t.destination,
+        formatTanggal(t.tanggal || t.departure_date),
+        t.kuota || t.max_participants,
+        t.peserta_count || 0
+      ];
+      tableRows.push(rowData);
+    });
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+    
+    doc.save("Data_Touring.pdf");
+  };
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -358,6 +388,9 @@ function Dashboard() {
             </select>
             <button onClick={handleExportExcel} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap shadow-lg shadow-emerald-900/20">
               <Download className="w-4 h-4" /> Export Excel
+            </button>
+            <button onClick={handleExportPDF} className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap shadow-lg shadow-red-900/20">
+              <FileText className="w-4 h-4" /> Export PDF
             </button>
           </div>
         </div>
