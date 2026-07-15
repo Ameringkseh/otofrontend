@@ -36,6 +36,19 @@ const IconShield = () => (
   </svg>
 );
 
+const getPasswordStrength = (pass) => {
+  if (!pass) return { score: 0, label: '', color: 'bg-slate-700', textColor: 'text-slate-500' };
+  let score = 0;
+  if (pass.length >= 8) score += 1;
+  if (/[A-Z]/.test(pass)) score += 1;
+  if (/[0-9]/.test(pass)) score += 1;
+  if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+  
+  if (score <= 1) return { score, label: 'Lemah', color: 'bg-red-500', textColor: 'text-red-400' };
+  if (score === 2 || score === 3) return { score, label: 'Sedang', color: 'bg-amber-500', textColor: 'text-amber-400' };
+  return { score, label: 'Kuat', color: 'bg-emerald-500', textColor: 'text-emerald-400' };
+};
+
 // ─── Input Field ──────────────────────────────────────────────────
 function InputField({ icon, label, type, value, onChange, name, placeholder, showToggle, onToggle, showPass }) {
   return (
@@ -75,18 +88,32 @@ function Auth() {
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  const [formData, setFormData] = useState({ username: '', password: '', role: 'user' });
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [formData, setFormData] = useState({ username: '', password: '', confirmPassword: '', role: 'user' });
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const switchMode = () => {
     setIsRegister(!isRegister);
-    setFormData({ username: '', password: '', role: 'user' });
+    setFormData({ username: '', password: '', confirmPassword: '', role: 'user' });
     setShowPass(false);
+    setShowConfirmPass(false);
+    setAgreeTerms(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isRegister) {
+      if (formData.password !== formData.confirmPassword) {
+        toast.error('Konfirmasi password tidak cocok.');
+        return;
+      }
+      if (!agreeTerms) {
+        toast.error('Anda harus menyetujui Syarat & Ketentuan.');
+        return;
+      }
+    }
     setLoading(true);
     try {
       if (isRegister) {
@@ -212,6 +239,53 @@ function Auth() {
                   onToggle={() => setShowPass(!showPass)}
                   showPass={showPass}
                 />
+
+                {isRegister && (
+                  <div className="pt-1 pb-2">
+                    <div className="flex gap-1 h-1.5 mb-1.5">
+                      {[1, 2, 3].map((level) => {
+                        const strength = getPasswordStrength(formData.password);
+                        const isActive = level === 1 ? strength.score >= 1 : level === 2 ? strength.score >= 2 : strength.score >= 4;
+                        return (
+                          <div key={level} className={`flex-1 rounded-full transition-colors duration-300 ${isActive ? strength.color : 'bg-slate-800'}`} />
+                        );
+                      })}
+                    </div>
+                    <p className={`text-[10px] uppercase font-bold tracking-wider ${getPasswordStrength(formData.password).textColor}`}>
+                      {getPasswordStrength(formData.password).label || 'Kekuatan Password'}
+                    </p>
+                  </div>
+                )}
+
+                {isRegister && (
+                  <InputField
+                    label="Konfirmasi Password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Ulangi password Anda"
+                    icon={<IconLock />}
+                    showToggle
+                    onToggle={() => setShowConfirmPass(!showConfirmPass)}
+                    showPass={showConfirmPass}
+                  />
+                )}
+
+                {isRegister && (
+                  <label className="flex items-start gap-3 mt-4 mb-2 cursor-pointer group">
+                    <div className="relative flex items-center justify-center mt-0.5">
+                      <input type="checkbox" className="sr-only" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${agreeTerms ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-800 border-slate-600 text-transparent group-hover:border-emerald-500'}`}>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                    <span className="text-xs text-slate-400 leading-relaxed">
+                      Saya setuju dengan <a href="#" className="text-emerald-400 hover:underline" onClick={(e) => e.preventDefault()}>Syarat & Ketentuan</a> serta <a href="#" className="text-emerald-400 hover:underline" onClick={(e) => e.preventDefault()}>Kebijakan Privasi</a> OtoMeet.
+                    </span>
+                  </label>
+                )}
 
                 {/* Role selector dihapus - Semua akun baru otomatis menjadi 'user' */}
 
