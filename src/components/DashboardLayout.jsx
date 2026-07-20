@@ -155,27 +155,34 @@ function DashboardLayout() {
             </div>
           )}
 
-          <button 
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className={`w-full flex items-center gap-3 border rounded-2xl p-3 transition text-left group ${showProfileMenu ? 'bg-slate-800 border-slate-600' : 'bg-slate-800/40 hover:bg-slate-800 border-slate-700/50'}`}
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg flex-shrink-0 text-slate-900 overflow-hidden">
-              {profilePhoto ? (
-                <img src={profilePhoto} alt="Profil" className="w-full h-full object-cover" />
-              ) : role === 'admin' ? (
-                <ShieldCheck className="w-5 h-5" />
-              ) : (
-                <User className="w-5 h-5" />
-              )}
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold text-white truncate">{username}</p>
-              <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">{role}</p>
-            </div>
-            <div className={`text-slate-500 transition ${showProfileMenu ? 'text-emerald-400' : 'group-hover:text-emerald-400'}`}>
-              {showProfileMenu ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </div>
-          </button>
+          <div className={`w-full flex items-center border rounded-2xl transition group ${showProfileMenu ? 'bg-slate-800 border-slate-600' : 'bg-slate-800/40 hover:bg-slate-800 border-slate-700/50'}`}>
+            <NavLink 
+              to="/dashboard/profil"
+              className="flex-1 flex items-center gap-3 p-3 text-left overflow-hidden rounded-l-2xl"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg flex-shrink-0 text-slate-900 overflow-hidden">
+                {profilePhoto ? (
+                  <img src={profilePhoto} alt="Profil" className="w-full h-full object-cover" />
+                ) : role === 'admin' ? (
+                  <ShieldCheck className="w-5 h-5" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-sm font-bold text-white truncate">{username}</p>
+                <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">{role}</p>
+              </div>
+            </NavLink>
+            <button 
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="px-3 py-4 flex items-center justify-center rounded-r-2xl hover:bg-slate-700/50 transition border-l border-slate-700/50 h-full"
+            >
+              <div className={`text-slate-500 transition ${showProfileMenu ? 'text-emerald-400' : 'group-hover:text-emerald-400'}`}>
+                {showProfileMenu ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -22,6 +22,9 @@ export default function Forum() {
   const renderedLastMsgIdRef = useRef(0);
   const menuRef = useRef(null);
   
+  const [unreadMsgId, setUnreadMsgId] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
   const username = localStorage.getItem('username') || 'User';
 
   const [activeMenuId, setActiveMenuId] = useState(null);
@@ -104,6 +107,27 @@ export default function Forum() {
         if (data.length > 0) {
           const latestMsg = data[data.length - 1];
           lastMsgIdRef.current = latestMsg.id;
+
+          if (!silent) {
+            const lastReadStr = localStorage.getItem(`lastRead_${activeTouring.id}`);
+            if (lastReadStr) {
+              const lastReadId = parseInt(lastReadStr, 10);
+              const unreadMsgs = data.filter(m => m.id > lastReadId);
+              if (unreadMsgs.length > 0) {
+                setUnreadMsgId(unreadMsgs[0].id);
+                setUnreadCount(unreadMsgs.length);
+              } else {
+                setUnreadMsgId(null);
+                setUnreadCount(0);
+              }
+            } else {
+              setUnreadMsgId(null);
+              setUnreadCount(0);
+            }
+            localStorage.setItem(`lastRead_${activeTouring.id}`, latestMsg.id.toString());
+          } else {
+            localStorage.setItem(`lastRead_${activeTouring.id}`, latestMsg.id.toString());
+          }
         }
       } catch (err) {
         if (!silent) setMessages([]);
@@ -186,6 +210,36 @@ export default function Forum() {
 
   const selectTouring = (t) => {
     setSearchParams({ id: t.id });
+  };
+
+  const renderDateSeparator = (dateStr) => {
+    const d = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    
+    let text = '';
+    if (d.toDateString() === today.toDateString()) {
+      text = 'Hari Ini';
+    } else if (d.toDateString() === yesterday.toDateString()) {
+      text = 'Kemarin';
+    } else {
+      const diffTime = Math.abs(today - d);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays < 7) {
+        text = d.toLocaleDateString('id-ID', { weekday: 'long' });
+      } else {
+        text = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      }
+    }
+    
+    return (
+      <div className="flex justify-center my-4">
+        <span className="bg-slate-800/80 text-slate-300 text-xs px-4 py-1.5 rounded-xl shadow-sm border border-slate-700/50 font-medium tracking-wide">
+          {text}
+        </span>
+      </div>
+    );
   };
 
   return (
@@ -282,8 +336,18 @@ export default function Forum() {
                   const isSelf = msg.user?.username === username;
                   const prevMsg = messages[index - 1];
                   const nextMsg = messages[index + 1];
-                  const isSameUserAsPrev = prevMsg && prevMsg.user?.username === msg.user?.username;
-                  const isSameUserAsNext = nextMsg && nextMsg.user?.username === msg.user?.username;
+                  
+                  const msgDate = new Date(msg.created_at);
+                  const prevMsgDate = prevMsg ? new Date(prevMsg.created_at) : null;
+                  const isNewDay = !prevMsgDate || msgDate.toDateString() !== prevMsgDate.toDateString();
+
+                  // We need to redefine isSameUserAsPrev carefully because of the date separator or unread separator
+                  const hasSeparatorAbove = isNewDay || msg.id === unreadMsgId;
+                  const isSameUserAsPrev = prevMsg && prevMsg.user?.username === msg.user?.username && !hasSeparatorAbove;
+                  
+                  const nextMsgDate = nextMsg ? new Date(nextMsg.created_at) : null;
+                  const willHaveSeparatorBelow = nextMsg && (nextMsg.id === unreadMsgId || nextMsgDate.toDateString() !== msgDate.toDateString());
+                  const isSameUserAsNext = nextMsg && nextMsg.user?.username === msg.user?.username && !willHaveSeparatorBelow;
                   
                   let bubbleClass = isSelf 
                     ? 'bg-sky-500 text-slate-950 font-medium shadow-md shadow-sky-900/20' 
@@ -296,87 +360,104 @@ export default function Forum() {
                   }
 
                   return (
-                    <div key={msg.id} className={`flex w-full ${isSelf ? 'justify-end' : 'justify-start'} ${isSameUserAsNext ? 'mb-1' : 'mb-4'}`}>
+                    <React.Fragment key={msg.id}>
+                      {isNewDay && renderDateSeparator(msg.created_at)}
                       
-                      {!isSelf && !isSameUserAsNext && (
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 mr-2 mt-auto overflow-hidden border border-slate-700 flex items-center justify-center">
-                          {msg.user?.profile_photo ? (
-                            <img src={msg.user.profile_photo} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-4 h-4 text-slate-400" />
-                          )}
+                      {msg.id === unreadMsgId && (
+                        <div className="flex justify-center my-5 relative">
+                          <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-sky-500/30"></div>
+                          </div>
+                          <div className="relative flex justify-center">
+                            <span className="bg-slate-900 text-sky-400 text-[11px] px-4 py-1 font-bold uppercase tracking-wider rounded-full shadow-sm border border-sky-500/20 flex items-center gap-2">
+                              {unreadCount} pesan belum dibaca
+                            </span>
+                          </div>
                         </div>
                       )}
-                      {!isSelf && isSameUserAsNext && (
-                        <div className="w-8 mr-2 flex-shrink-0"></div>
-                      )}
 
-                      <div className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[75%]`}>
-                        {!isSameUserAsPrev && (
-                          <span className="text-[11px] text-slate-400 mb-1 px-1.5 font-bold tracking-wide">
-                            {isSelf ? 'Anda' : (msg.user?.username || 'User')}
-                          </span>
+                      <div className={`flex w-full ${isSelf ? 'justify-end' : 'justify-start'} ${isSameUserAsNext ? 'mb-1' : 'mb-4'}`}>
+                        
+                        {!isSelf && !isSameUserAsNext && (
+                          <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 mr-2 mt-auto overflow-hidden border border-slate-700 flex items-center justify-center shadow-sm">
+                            {msg.user?.profile_photo ? (
+                              <img src={msg.user.profile_photo} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="w-4 h-4 text-slate-400" />
+                            )}
+                          </div>
                         )}
-                        <div className={`px-4 py-2.5 text-sm leading-relaxed w-full relative group ${bubbleClass}`}>
-                          
-                          {/* TOMBOL MUNCUL MENU (Chevron) - KHUSUS MILIK SENDIRI */}
-                          {isSelf && editingMsgId !== msg.id && (
-                             <button 
-                               onClick={() => setActiveMenuId(activeMenuId === msg.id ? null : msg.id)}
-                               className="absolute top-1 right-2 w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 text-sky-950 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                             >
-                               <ChevronDown className="w-4 h-4" />
-                             </button>
-                          )}
-                          
-                          {/* CONTEXT MENU (Dropdown WA-style) */}
-                          {isSelf && activeMenuId === msg.id && (
-                            <div ref={menuRef} className="absolute top-8 right-2 w-32 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-1 z-20 text-slate-200">
-                              <button 
-                                onClick={() => { setEditingMsgId(msg.id); setEditInputVal(msg.message); setActiveMenuId(null); }}
-                                className="w-full text-left px-4 py-2 hover:bg-slate-700 flex items-center gap-2 text-sm"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" /> Edit
-                              </button>
-                              <button 
-                                onClick={() => deleteMessage(msg.id)}
-                                className="w-full text-left px-4 py-2 hover:bg-red-500/10 hover:text-red-400 flex items-center gap-2 text-sm text-red-400"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" /> Hapus
-                              </button>
-                            </div>
-                          )}
+                        {!isSelf && isSameUserAsNext && (
+                          <div className="w-8 mr-2 flex-shrink-0"></div>
+                        )}
 
-                          {editingMsgId === msg.id ? (
-                            <div className="flex flex-col gap-2 mt-1">
-                              <input 
-                                type="text"
-                                autoFocus
-                                value={editInputVal}
-                                onChange={(e) => setEditInputVal(e.target.value)}
-                                className="bg-sky-100 text-slate-900 border border-sky-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-sky-500 w-full"
-                              />
-                              <div className="flex justify-end gap-2">
-                                <button onClick={() => setEditingMsgId(null)} className="text-slate-600 hover:text-slate-900 flex items-center gap-1 text-xs font-bold">
-                                  <X className="w-3 h-3" /> Batal
+                        <div className={`flex flex-col ${isSelf ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[75%]`}>
+                          {!isSameUserAsPrev && (
+                            <span className="text-[11px] text-slate-400 mb-1 px-1.5 font-bold tracking-wide">
+                              {isSelf ? 'Anda' : (msg.user?.username || 'User')}
+                            </span>
+                          )}
+                          <div className={`px-4 py-2.5 text-sm leading-relaxed w-full relative group ${bubbleClass}`}>
+                            
+                            {/* TOMBOL MUNCUL MENU (Chevron) - KHUSUS MILIK SENDIRI */}
+                            {isSelf && editingMsgId !== msg.id && (
+                               <button 
+                                 onClick={() => setActiveMenuId(activeMenuId === msg.id ? null : msg.id)}
+                                 className="absolute top-1 right-2 w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 text-sky-950 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                               >
+                                 <ChevronDown className="w-4 h-4" />
+                               </button>
+                            )}
+                            
+                            {/* CONTEXT MENU (Dropdown WA-style) */}
+                            {isSelf && activeMenuId === msg.id && (
+                              <div ref={menuRef} className="absolute top-8 right-2 w-32 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-1 z-20 text-slate-200">
+                                <button 
+                                  onClick={() => { setEditingMsgId(msg.id); setEditInputVal(msg.message); setActiveMenuId(null); }}
+                                  className="w-full text-left px-4 py-2 hover:bg-slate-700 flex items-center gap-2 text-sm"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" /> Edit
                                 </button>
-                                <button onClick={() => submitEditMessage(msg.id)} disabled={isProcessingMsg} className="bg-sky-600 text-white rounded px-2 py-1 flex items-center gap-1 text-xs font-bold hover:bg-sky-700 shadow-sm">
-                                  <Check className="w-3 h-3" /> Simpan
+                                <button 
+                                  onClick={() => deleteMessage(msg.id)}
+                                  className="w-full text-left px-4 py-2 hover:bg-red-500/10 hover:text-red-400 flex items-center gap-2 text-sm text-red-400"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" /> Hapus
                                 </button>
                               </div>
-                            </div>
-                          ) : (
-                            <>
-                              {msg.message}
-                              <span className={`block text-[9px] mt-1.5 text-right font-bold uppercase tracking-wider ${isSelf ? 'text-sky-950/70' : 'text-slate-500'}`}>
-                                {new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
-                                {msg.is_edited && ' (diedit)'}
-                              </span>
-                            </>
-                          )}
+                            )}
+
+                            {editingMsgId === msg.id ? (
+                              <div className="flex flex-col gap-2 mt-1">
+                                <input 
+                                  type="text"
+                                  autoFocus
+                                  value={editInputVal}
+                                  onChange={(e) => setEditInputVal(e.target.value)}
+                                  className="bg-sky-100 text-slate-900 border border-sky-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-sky-500 w-full"
+                                />
+                                <div className="flex justify-end gap-2">
+                                  <button onClick={() => setEditingMsgId(null)} className="text-slate-600 hover:text-slate-900 flex items-center gap-1 text-xs font-bold">
+                                    <X className="w-3 h-3" /> Batal
+                                  </button>
+                                  <button onClick={() => submitEditMessage(msg.id)} disabled={isProcessingMsg} className="bg-sky-600 text-white rounded px-2 py-1 flex items-center gap-1 text-xs font-bold hover:bg-sky-700 shadow-sm">
+                                    <Check className="w-3 h-3" /> Simpan
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {msg.message}
+                                <span className={`block text-[9px] mt-1.5 text-right font-bold uppercase tracking-wider ${isSelf ? 'text-sky-950/70' : 'text-slate-500'}`}>
+                                  {new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
+                                  {msg.is_edited && ' (diedit)'}
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </React.Fragment>
                   );
                 })
               )}
